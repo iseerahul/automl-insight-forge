@@ -1,5 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -47,11 +50,27 @@ const MLStudio = () => {
     ]
   };
 
-  const mockDatasets = [
-    { id: "customer_data", name: "Customer Database", size: "1.2M rows", uploaded: "2 hours ago" },
-    { id: "sales_data", name: "Sales Transactions", size: "856K rows", uploaded: "1 day ago" },
-    { id: "product_data", name: "Product Catalog", size: "45K rows", uploaded: "3 days ago" }
-  ];
+  const [datasets, setDatasets] = useState<any[]>([]);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    fetchDatasets();
+  }, []);
+
+  const fetchDatasets = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('datasets')
+        .select('*')
+        .eq('status', 'processed')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setDatasets(data || []);
+    } catch (error) {
+      console.error('Error fetching datasets:', error);
+    }
+  };
 
   const handleStartTraining = () => {
     setIsTraining(true);

@@ -3,7 +3,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
 import DataConnect from "./pages/DataConnect";
 import MLStudio from "./pages/MLStudio";
 import NotFound from "./pages/NotFound";
@@ -16,18 +19,21 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/dataconnect" element={<DataConnect />} />
-          <Route path="/mlstudio" element={<MLStudio />} />
-          <Route path="/forecast" element={<NotFound />} />
-          <Route path="/recommendation" element={<NotFound />} />
-          <Route path="/segmentation" element={<NotFound />} />
-          <Route path="/dashboard" element={<NotFound />} />
-          <Route path="/settings" element={<NotFound />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/dataconnect" element={<ProtectedRoute><DataConnect /></ProtectedRoute>} />
+            <Route path="/mlstudio" element={<ProtectedRoute><MLStudio /></ProtectedRoute>} />
+            <Route path="/forecast" element={<ProtectedRoute><NotFound /></ProtectedRoute>} />
+            <Route path="/recommendation" element={<ProtectedRoute><NotFound /></ProtectedRoute>} />
+            <Route path="/segmentation" element={<ProtectedRoute><NotFound /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><NotFound /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><NotFound /></ProtectedRoute>} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

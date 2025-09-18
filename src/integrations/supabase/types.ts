@@ -14,7 +14,137 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      datasets: {
+        Row: {
+          column_count: number | null
+          created_at: string
+          data_profile: Json | null
+          file_size: number
+          file_type: string
+          id: string
+          name: string
+          original_filename: string
+          row_count: number | null
+          status: string
+          storage_path: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          column_count?: number | null
+          created_at?: string
+          data_profile?: Json | null
+          file_size: number
+          file_type: string
+          id?: string
+          name: string
+          original_filename: string
+          row_count?: number | null
+          status?: string
+          storage_path?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          column_count?: number | null
+          created_at?: string
+          data_profile?: Json | null
+          file_size?: number
+          file_type?: string
+          id?: string
+          name?: string
+          original_filename?: string
+          row_count?: number | null
+          status?: string
+          storage_path?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ml_models: {
+        Row: {
+          configuration: Json
+          created_at: string
+          dataset_id: string
+          id: string
+          metrics: Json | null
+          name: string
+          problem_subtype: string
+          problem_type: string
+          results: Json | null
+          status: string
+          training_progress: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          configuration?: Json
+          created_at?: string
+          dataset_id: string
+          id?: string
+          metrics?: Json | null
+          name: string
+          problem_subtype: string
+          problem_type: string
+          results?: Json | null
+          status?: string
+          training_progress?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          configuration?: Json
+          created_at?: string
+          dataset_id?: string
+          id?: string
+          metrics?: Json | null
+          name?: string
+          problem_subtype?: string
+          problem_type?: string
+          results?: Json | null
+          status?: string
+          training_progress?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ml_models_dataset_id_fkey"
+            columns: ["dataset_id"]
+            isOneToOne: false
+            referencedRelation: "datasets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          company: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
