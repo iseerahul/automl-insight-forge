@@ -1,0 +1,375 @@
+import { useState } from "react";
+import { Layout } from "@/components/Layout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Brain, 
+  Database, 
+  Target, 
+  Settings, 
+  Play,
+  CheckCircle,
+  Clock,
+  TrendingUp,
+  Users,
+  DollarSign,
+  AlertTriangle
+} from "lucide-react";
+
+const MLStudio = () => {
+  const [selectedDataset, setSelectedDataset] = useState("");
+  const [selectedProblem, setSelectedProblem] = useState("");
+  const [selectedProblemType, setSelectedProblemType] = useState("");
+  const [isTraining, setIsTraining] = useState(false);
+  const [trainingProgress, setTrainingProgress] = useState(0);
+
+  const problemTypes = {
+    classification: [
+      { id: "churn", name: "Customer Churn Prediction", description: "Predict which customers are likely to churn" },
+      { id: "fraud", name: "Fraud Detection", description: "Identify fraudulent transactions or activities" },
+      { id: "sentiment", name: "Sentiment Analysis", description: "Classify text sentiment as positive/negative/neutral" },
+      { id: "quality", name: "Quality Assessment", description: "Classify product or service quality levels" }
+    ],
+    regression: [
+      { id: "revenue", name: "Revenue Forecasting", description: "Predict future revenue or sales figures" },
+      { id: "pricing", name: "Price Optimization", description: "Determine optimal pricing strategies" },
+      { id: "demand", name: "Demand Prediction", description: "Forecast product or service demand" },
+      { id: "ltv", name: "Customer Lifetime Value", description: "Predict customer lifetime value" }
+    ],
+    clustering: [
+      { id: "segmentation", name: "Customer Segmentation", description: "Group customers by behavior patterns" },
+      { id: "market", name: "Market Segmentation", description: "Identify distinct market segments" },
+      { id: "product", name: "Product Clustering", description: "Group similar products or services" },
+      { id: "user", name: "User Behavior Clustering", description: "Cluster users by usage patterns" }
+    ]
+  };
+
+  const mockDatasets = [
+    { id: "customer_data", name: "Customer Database", size: "1.2M rows", uploaded: "2 hours ago" },
+    { id: "sales_data", name: "Sales Transactions", size: "856K rows", uploaded: "1 day ago" },
+    { id: "product_data", name: "Product Catalog", size: "45K rows", uploaded: "3 days ago" }
+  ];
+
+  const handleStartTraining = () => {
+    setIsTraining(true);
+    setTrainingProgress(0);
+    
+    const interval = setInterval(() => {
+      setTrainingProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setIsTraining(false);
+          return 100;
+        }
+        return prev + 2;
+      });
+    }, 150);
+  };
+
+  const getCurrentProblemTypes = () => {
+    if (!selectedProblem) return [];
+    return problemTypes[selectedProblem as keyof typeof problemTypes] || [];
+  };
+
+  const getProblemIcon = (problemId: string) => {
+    const iconMap: { [key: string]: any } = {
+      churn: Users,
+      fraud: AlertTriangle,
+      revenue: DollarSign,
+      pricing: TrendingUp,
+      segmentation: Users,
+      market: Target
+    };
+    return iconMap[problemId] || Target;
+  };
+
+  return (
+    <Layout>
+      <div className="p-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center mb-4">
+            <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center mr-4">
+              <Brain className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">ML Studio</h1>
+              <p className="text-muted-foreground">Visual model builder with automated ML workflows</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Configuration Panel */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Step 1: Data Selection */}
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Database className="w-5 h-5 mr-2" />
+                  Step 1: Select Dataset
+                </CardTitle>
+                <CardDescription>
+                  Choose the dataset you want to build a model from
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Select value={selectedDataset} onValueChange={setSelectedDataset}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a dataset from DataConnect Pro" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mockDatasets.map(dataset => (
+                      <SelectItem key={dataset.id} value={dataset.id}>
+                        <div className="flex items-center justify-between w-full">
+                          <span>{dataset.name}</span>
+                          <Badge variant="secondary" className="ml-2">{dataset.size}</Badge>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
+
+            {/* Step 2: Problem Type */}
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Target className="w-5 h-5 mr-2" />
+                  Step 2: ML Problem Type
+                </CardTitle>
+                <CardDescription>
+                  Select the type of machine learning problem
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Select value={selectedProblem} onValueChange={setSelectedProblem}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Choose ML problem category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="classification">Classification</SelectItem>
+                    <SelectItem value="regression">Regression</SelectItem>
+                    <SelectItem value="clustering">Clustering</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {selectedProblem && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    {getCurrentProblemTypes().map(type => {
+                      const IconComponent = getProblemIcon(type.id);
+                      return (
+                        <div
+                          key={type.id}
+                          className={`p-4 border rounded-lg cursor-pointer transition-smooth ${
+                            selectedProblemType === type.id
+                              ? "border-primary bg-primary/5"
+                              : "border-border hover:border-primary/50"
+                          }`}
+                          onClick={() => setSelectedProblemType(type.id)}
+                        >
+                          <div className="flex items-start space-x-3">
+                            <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center mt-1">
+                              <IconComponent className="w-4 h-4 text-accent" />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-medium text-sm">{type.name}</h4>
+                              <p className="text-xs text-muted-foreground mt-1">{type.description}</p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Step 3: Model Configuration */}
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Settings className="w-5 h-5 mr-2" />
+                  Step 3: Model Configuration
+                </CardTitle>
+                <CardDescription>
+                  Configure your model training parameters
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium">Training Split</label>
+                    <Select defaultValue="80-20">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="80-20">80% Train / 20% Test</SelectItem>
+                        <SelectItem value="70-30">70% Train / 30% Test</SelectItem>
+                        <SelectItem value="90-10">90% Train / 10% Test</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Validation Method</label>
+                    <Select defaultValue="cv">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cv">5-Fold Cross Validation</SelectItem>
+                        <SelectItem value="holdout">Holdout Validation</SelectItem>
+                        <SelectItem value="stratified">Stratified Sampling</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="bg-muted/30 rounded-lg p-4">
+                  <h4 className="font-medium mb-2">AutoML Features</h4>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="flex items-center">
+                      <CheckCircle className="w-4 h-4 text-success mr-2" />
+                      Feature Engineering
+                    </div>
+                    <div className="flex items-center">
+                      <CheckCircle className="w-4 h-4 text-success mr-2" />
+                      Hyperparameter Tuning
+                    </div>
+                    <div className="flex items-center">
+                      <CheckCircle className="w-4 h-4 text-success mr-2" />
+                      Model Selection
+                    </div>
+                    <div className="flex items-center">
+                      <CheckCircle className="w-4 h-4 text-success mr-2" />
+                      Cross Validation
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Training Section */}
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Play className="w-5 h-5 mr-2" />
+                  Model Training
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!isTraining && trainingProgress < 100 && (
+                  <Button 
+                    onClick={handleStartTraining}
+                    disabled={!selectedDataset || !selectedProblemType}
+                    className="w-full gradient-primary text-primary-foreground"
+                    size="lg"
+                  >
+                    <Play className="w-5 h-5 mr-2" />
+                    Start AutoML Training
+                  </Button>
+                )}
+
+                {isTraining && (
+                  <div className="space-y-4">
+                    <div className="flex justify-between text-sm">
+                      <span>Training in progress...</span>
+                      <span>{trainingProgress}%</span>
+                    </div>
+                    <Progress value={trainingProgress} className="h-3" />
+                    <div className="text-sm text-muted-foreground">
+                      <div className="flex items-center">
+                        <Clock className="w-4 h-4 mr-2" />
+                        Estimated time remaining: {Math.max(0, Math.ceil((100 - trainingProgress) / 10))} minutes
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {trainingProgress === 100 && !isTraining && (
+                  <div className="space-y-4">
+                    <div className="flex items-center text-success">
+                      <CheckCircle className="w-5 h-5 mr-2" />
+                      Training completed successfully!
+                    </div>
+                    <Button className="w-full" variant="outline">
+                      View Model Results
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Info Panel */}
+          <div className="space-y-6">
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="text-lg">Training Status</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Active Models</span>
+                  <span className="font-semibold">3</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">In Training</span>
+                  <span className="font-semibold">{isTraining ? "1" : "0"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Deployed</span>
+                  <span className="font-semibold">2</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="text-lg">Recent Models</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="border border-border rounded-lg p-3">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="font-medium text-sm">Churn Prediction</span>
+                    <Badge variant="secondary">94.2%</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Customer Dataset • 2 hours ago</p>
+                </div>
+                <div className="border border-border rounded-lg p-3">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="font-medium text-sm">Revenue Forecast</span>
+                    <Badge variant="secondary">87.6%</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Sales Dataset • 1 day ago</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="text-lg">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button className="w-full justify-start" variant="outline">
+                  <Database className="w-4 h-4 mr-2" />
+                  Upload New Dataset
+                </Button>
+                <Button className="w-full justify-start" variant="outline">
+                  <Target className="w-4 h-4 mr-2" />
+                  Model Library
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  );
+};
+
+export default MLStudio;
