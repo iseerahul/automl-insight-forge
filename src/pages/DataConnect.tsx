@@ -209,12 +209,25 @@ const DataConnect = () => {
                       className="hidden"
                       id="file-upload"
                       disabled={isUploading}
+                      ref={(input) => {
+                        if (input) {
+                          (window as any).fileInput = input;
+                        }
+                      }}
                     />
-                    <Label htmlFor="file-upload">
-                      <Button variant="outline" className="cursor-pointer" disabled={isUploading}>
-                        {isUploading ? "Uploading..." : "Choose Files"}
-                      </Button>
-                    </Label>
+                    <Button 
+                      variant="outline" 
+                      className="cursor-pointer" 
+                      disabled={isUploading}
+                      onClick={() => {
+                        const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+                        if (fileInput) {
+                          fileInput.click();
+                        }
+                      }}
+                    >
+                      {isUploading ? "Uploading..." : "Choose Files"}
+                    </Button>
                   </div>
 
                   {/* Upload Progress */}
