@@ -118,6 +118,45 @@ export type Database = {
           },
         ]
       }
+      model_results: {
+        Row: {
+          created_at: string
+          dataset_name: string
+          id: string
+          metrics: Json
+          model_id: string
+          problem_subtype: string
+          problem_type: string
+          results: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dataset_name: string
+          id?: string
+          metrics?: Json
+          model_id: string
+          problem_subtype: string
+          problem_type: string
+          results?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dataset_name?: string
+          id?: string
+          metrics?: Json
+          model_id?: string
+          problem_subtype?: string
+          problem_type?: string
+          results?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           company: string | null

@@ -179,9 +179,9 @@ const DataConnect = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 gap-8">
           {/* Upload Section */}
-          <div className="lg:col-span-2">
+          <div>
             <Card className="shadow-card">
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -319,68 +319,6 @@ const DataConnect = () => {
             )}
           </div>
 
-          {/* Info Panel */}
-          <div className="space-y-6">
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle className="text-lg">Quick Stats</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Total Datasets</span>
-                  <span className="font-semibold">{datasets.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Processing Status</span>
-                  <span className="text-success font-semibold">Active</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Storage Used</span>
-                  <span className="font-semibold">
-                    {formatFileSize(datasets.reduce((total, d) => total + d.file_size, 0))}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle className="text-lg">Data Quality</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Validation</span>
-                  <CheckCircle className="w-5 h-5 text-success" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Missing Values</span>
-                  <span className="text-warning">&lt; 5%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Duplicates</span>
-                  <CheckCircle className="w-5 h-5 text-success" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle className="text-lg">Next Steps</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button className="w-full justify-start" variant="outline">
-                  <Database className="w-4 h-4 mr-2" />
-                  View Data Profile
-                </Button>
-                <Button 
-                  className="w-full justify-start gradient-primary text-primary-foreground"
-                  onClick={() => window.location.href = '/mlstudio'}
-                >
-                  Launch ML Studio
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </div>
     </Layout>

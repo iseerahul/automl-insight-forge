@@ -29,6 +29,7 @@ const MLStudio = () => {
   const [isTraining, setIsTraining] = useState(false);
   const [trainingProgress, setTrainingProgress] = useState(0);
   const [modelResults, setModelResults] = useState<any>(null);
+  const [resultsHistory, setResultsHistory] = useState<any[]>([]);
 
   const problemTypes = {
     classification: [
@@ -56,6 +57,7 @@ const MLStudio = () => {
 
   useEffect(() => {
     fetchDatasets();
+    fetchResultsHistory();
   }, []);
 
   const fetchDatasets = async () => {
@@ -70,6 +72,21 @@ const MLStudio = () => {
       setDatasets(data || []);
     } catch (error) {
       console.error('Error fetching datasets:', error);
+    }
+  };
+
+  const fetchResultsHistory = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('model_results')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      setResultsHistory(data || []);
+    } catch (error) {
+      console.error('Error fetching results history:', error);
     }
   };
 
@@ -151,6 +168,20 @@ const MLStudio = () => {
             setTrainingProgress(100);
             setIsTraining(false);
             setModelResults(updatedModel);
+            
+            // Save to results history
+            const dataset = datasets.find(d => d.id === selectedDataset);
+            await supabase.from('model_results').insert({
+              user_id: user?.id,
+              model_id: updatedModel.id,
+              dataset_name: dataset?.name || 'Unknown',
+              problem_type: selectedProblem,
+              problem_subtype: selectedProblemType,
+              metrics: updatedModel.metrics || {},
+              results: updatedModel.results || {}
+            });
+            
+            fetchResultsHistory();
             toast.success('Model training completed successfully!');
           } else if (updatedModel?.status === 'error') {
             clearInterval(checkCompletion);
@@ -216,9 +247,9 @@ const MLStudio = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           {/* Configuration Panel */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="xl:col-span-2 space-y-6">
             {/* Step 1: Data Selection */}
             <Card className="shadow-card">
               <CardHeader>
@@ -416,28 +447,102 @@ const MLStudio = () => {
                     {modelResults && (
                       <div className="mt-4">
                         <h4 className="font-medium mb-3">Model Results</h4>
-                        <div className="grid grid-cols-2 gap-4 mb-4">
-                          <div className="bg-muted/30 rounded-lg p-3">
-                            <div className="text-sm text-muted-foreground">Accuracy</div>
-                            <div className="text-xl font-bold text-success">
-                              {modelResults.results?.accuracy || '94.2%'}
-                            </div>
-                          </div>
-                          <div className="bg-muted/30 rounded-lg p-3">
-                            <div className="text-sm text-muted-foreground">F1 Score</div>
-                            <div className="text-xl font-bold text-primary">
-                              {modelResults.results?.f1_score || '0.89'}
-                            </div>
-                          </div>
-                        </div>
-                        {modelResults.results?.insights && (
-                          <div className="bg-accent/10 rounded-lg p-3">
-                            <div className="text-sm font-medium mb-1">Key Insights</div>
-                            <div className="text-sm text-muted-foreground">
-                              {modelResults.results.insights}
-                            </div>
-                          </div>
-                        )}
+                         {/* Metrics Display */}
+                         <div className="grid grid-cols-2 gap-4 mb-4">
+                           {modelResults.metrics?.accuracy && (
+                             <div className="bg-muted/30 rounded-lg p-3">
+                               <div className="text-sm text-muted-foreground">Accuracy</div>
+                               <div className="text-xl font-bold text-success">
+                                 {(modelResults.metrics.accuracy * 100).toFixed(1)}%
+                               </div>
+                             </div>
+                           )}
+                           {modelResults.metrics?.f1_score && (
+                             <div className="bg-muted/30 rounded-lg p-3">
+                               <div className="text-sm text-muted-foreground">F1 Score</div>
+                               <div className="text-xl font-bold text-primary">
+                                 {modelResults.metrics.f1_score.toFixed(3)}
+                               </div>
+                             </div>
+                           )}
+                           {modelResults.metrics?.r2_score && (
+                             <div className="bg-muted/30 rounded-lg p-3">
+                               <div className="text-sm text-muted-foreground">R² Score</div>
+                               <div className="text-xl font-bold text-success">
+                                 {modelResults.metrics.r2_score.toFixed(3)}
+                               </div>
+                             </div>
+                           )}
+                           {modelResults.metrics?.rmse && (
+                             <div className="bg-muted/30 rounded-lg p-3">
+                               <div className="text-sm text-muted-foreground">RMSE</div>
+                               <div className="text-xl font-bold text-primary">
+                                 {modelResults.metrics.rmse.toFixed(1)}
+                               </div>
+                             </div>
+                           )}
+                           {modelResults.metrics?.silhouette_score && (
+                             <div className="bg-muted/30 rounded-lg p-3">
+                               <div className="text-sm text-muted-foreground">Silhouette Score</div>
+                               <div className="text-xl font-bold text-success">
+                                 {modelResults.metrics.silhouette_score.toFixed(3)}
+                               </div>
+                             </div>
+                           )}
+                           {modelResults.metrics?.davies_bouldin_index && (
+                             <div className="bg-muted/30 rounded-lg p-3">
+                               <div className="text-sm text-muted-foreground">Davies-Bouldin Index</div>
+                               <div className="text-xl font-bold text-primary">
+                                 {modelResults.metrics.davies_bouldin_index.toFixed(3)}
+                               </div>
+                             </div>
+                           )}
+                         </div>
+
+                         {/* Specific Predictions */}
+                         {modelResults.results?.specific_predictions && (
+                           <div className="bg-accent/10 rounded-lg p-4 mb-4">
+                             <div className="text-sm font-medium mb-2">Specific Predictions</div>
+                             <div className="space-y-1">
+                               {modelResults.results.specific_predictions.map((prediction: string, idx: number) => (
+                                 <div key={idx} className="text-sm text-muted-foreground">
+                                   • {prediction}
+                                 </div>
+                               ))}
+                             </div>
+                           </div>
+                         )}
+
+                         {/* Insights */}
+                         {modelResults.results?.insights && (
+                           <div className="bg-accent/10 rounded-lg p-3 mb-4">
+                             <div className="text-sm font-medium mb-2">Key Insights</div>
+                             <div className="space-y-1">
+                               {Array.isArray(modelResults.results.insights) ? 
+                                 modelResults.results.insights.map((insight: string, idx: number) => (
+                                   <div key={idx} className="text-sm text-muted-foreground">
+                                     • {insight}
+                                   </div>
+                                 )) : 
+                                 <div className="text-sm text-muted-foreground">{modelResults.results.insights}</div>
+                               }
+                             </div>
+                           </div>
+                         )}
+
+                         {/* Recommendations */}
+                         {modelResults.results?.recommendations && (
+                           <div className="bg-primary/10 rounded-lg p-3">
+                             <div className="text-sm font-medium mb-2">Recommendations</div>
+                             <div className="space-y-1">
+                               {modelResults.results.recommendations.map((rec: string, idx: number) => (
+                                 <div key={idx} className="text-sm text-muted-foreground">
+                                   • {rec}
+                                 </div>
+                               ))}
+                             </div>
+                           </div>
+                         )}
                       </div>
                     )}
                     <Button 
