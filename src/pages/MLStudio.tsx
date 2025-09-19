@@ -141,7 +141,7 @@ const MLStudio = () => {
                     <SelectValue placeholder="Select a dataset from DataConnect Pro" />
                   </SelectTrigger>
                   <SelectContent>
-                    {mockDatasets.map(dataset => (
+                    {datasets.map(dataset => (
                       <SelectItem key={dataset.id} value={dataset.id}>
                         <div className="flex items-center justify-between w-full">
                           <span>{dataset.name}</span>
