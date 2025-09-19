@@ -25,11 +25,11 @@ const App = () => (
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/dataconnect" element={<ProtectedRoute><DataConnect /></ProtectedRoute>} />
             <Route path="/mlstudio" element={<ProtectedRoute><MLStudio /></ProtectedRoute>} />
-            <Route path="/forecast" element={<ProtectedRoute><NotFound /></ProtectedRoute>} />
-            <Route path="/recommendation" element={<ProtectedRoute><NotFound /></ProtectedRoute>} />
-            <Route path="/segmentation" element={<ProtectedRoute><NotFound /></ProtectedRoute>} />
-            <Route path="/dashboard" element={<ProtectedRoute><NotFound /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><NotFound /></ProtectedRoute>} />
+            <Route path="/forecast" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/recommendation" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/segmentation" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
