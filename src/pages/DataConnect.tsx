@@ -75,23 +75,13 @@ const DataConnect = () => {
       formData.append('file', file);
 
       // Upload file using edge function
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      const response = await fetch(`https://implgfeegibmaxerblkc.supabase.co/functions/v1/upload-dataset`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`,
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImltcGxnZmVlZ2libWF4ZXJibGtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxOTk1NjksImV4cCI6MjA3Mzc3NTU2OX0.kUJ8i-bt-xY-13jlHc3FqM3006S6gC5_vGzo5oYnOrQ',
-        },
+      const { data: result, error } = await supabase.functions.invoke('upload-dataset', {
         body: formData,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
-        throw new Error(errorData.error || 'Upload failed');
+      if (error) {
+        throw new Error(error.message || 'Upload failed');
       }
-
-      const result = await response.json();
       
       // Simulate progress for better UX
       const progressInterval = setInterval(() => {

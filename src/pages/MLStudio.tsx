@@ -117,20 +117,11 @@ const MLStudio = () => {
       if (modelError) throw modelError;
 
       // Call the process-ml-model edge function
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      const response = await fetch(`https://implgfeegibmaxerblkc.supabase.co/functions/v1/process-ml-model`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          modelId: mlModel.id
-        }),
+      const { data: processResult, error: processError } = await supabase.functions.invoke('process-ml-model', {
+        body: { modelId: mlModel.id }
       });
 
-      if (!response.ok) {
+      if (processError) {
         throw new Error('Failed to start training');
       }
 
