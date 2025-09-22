@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { read, utils } from "https://deno.land/x/sheetjs@v0.18.3/xlsx.mjs";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -74,7 +75,7 @@ serve(async (req) => {
 
     const dataset = model.datasets;
     
-    // Get actual data file content from storage and parse CSV
+    // Get actual data file content from storage and parse different file types
     let dataContent = '';
     let csvHeaders: string[] = [];
     let csvRows: string[][] = [];
@@ -86,10 +87,10 @@ serve(async (req) => {
         .download(dataset.storage_path);
       
       if (!fileError && fileData) {
-        const text = await fileData.text();
-        
-        // Parse CSV properly
+        // Handle different file types
         if (dataset.file_type === 'text/csv' || dataset.original_filename.endsWith('.csv')) {
+          // Parse CSV files
+          const text = await fileData.text();
           const lines = text.split('\n').filter(line => line.trim().length > 0);
           
           if (lines.length > 0) {
@@ -100,18 +101,6 @@ serve(async (req) => {
             csvRows = lines.slice(1, Math.min(21, lines.length)).map(line => 
               line.split(',').map(cell => cell.trim().replace(/"/g, ''))
             );
-            
-            // Create data summary
-            dataSummary = `
-CSV Structure:
-Headers: ${csvHeaders.join(', ')}
-
-Sample Data (first 20 rows):
-${csvRows.map((row, i) => `Row ${i + 1}: ${row.join(', ')}`).join('\n')}
-
-Total Rows: ${dataset.row_count || lines.length - 1}
-Total Columns: ${csvHeaders.length}
-            `;
             
             dataContent = `CSV File with ${csvHeaders.length} columns and ${dataset.row_count || lines.length - 1} rows.
             
@@ -126,9 +115,51 @@ ${csvRows.map(row => csvHeaders.map((header, i) => `${header}: ${row[i] || 'N/A'
               totalRows: dataset.row_count
             });
           }
+        } else if (dataset.file_type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+                   dataset.file_type === 'application/vnd.ms-excel' ||
+                   dataset.original_filename.endsWith('.xlsx') || 
+                   dataset.original_filename.endsWith('.xls')) {
+          // Parse Excel files
+          console.log('Parsing Excel file...');
+          
+          const arrayBuffer = await fileData.arrayBuffer();
+          const workbook = read(new Uint8Array(arrayBuffer), { type: 'array' });
+          
+          // Get the first worksheet
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          
+          // Convert to JSON
+          const jsonData = utils.sheet_to_json(worksheet, { header: 1 });
+          
+          if (jsonData.length > 0) {
+            // First row as headers
+            csvHeaders = (jsonData[0] as any[]).map(h => String(h || '').trim());
+            
+            // Get first 20 data rows
+            csvRows = jsonData.slice(1, Math.min(21, jsonData.length)).map(row => 
+              (row as any[]).map(cell => String(cell || '').trim())
+            );
+            
+            dataContent = `Excel File with ${csvHeaders.length} columns and ${jsonData.length - 1} rows.
+            
+Headers: ${csvHeaders.join(', ')}
+
+First 20 data rows:
+${csvRows.map(row => csvHeaders.map((header, i) => `${header}: ${row[i] || 'N/A'}`).join(' | ')).join('\n')}`;
+            
+            console.log('Successfully parsed Excel file:', {
+              headers: csvHeaders,
+              rowCount: csvRows.length,
+              totalRows: jsonData.length - 1,
+              sheetName: firstSheetName
+            });
+          }
         } else {
-          // For non-CSV files, just take first 2000 characters
+          // For other file types, try to read as text
+          const text = await fileData.text();
           dataContent = text.substring(0, 2000);
+          console.log('Read file as text (first 2000 chars)');
         }
         
         console.log('Successfully loaded and parsed data file');

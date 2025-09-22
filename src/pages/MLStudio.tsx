@@ -19,7 +19,9 @@ import {
   TrendingUp,
   Users,
   DollarSign,
-  AlertTriangle
+  AlertTriangle,
+  Trash2,
+  Eye
 } from "lucide-react";
 
 const MLStudio = () => {
@@ -30,6 +32,7 @@ const MLStudio = () => {
   const [trainingProgress, setTrainingProgress] = useState(0);
   const [modelResults, setModelResults] = useState<any>(null);
   const [resultsHistory, setResultsHistory] = useState<any[]>([]);
+  const [selectedResult, setSelectedResult] = useState<any>(null);
 
   const problemTypes = {
     classification: [
@@ -87,6 +90,26 @@ const MLStudio = () => {
       setResultsHistory(data || []);
     } catch (error) {
       console.error('Error fetching results history:', error);
+    }
+  };
+
+  const handleDeleteResult = async (resultId: string) => {
+    try {
+      const { error } = await supabase
+        .from('model_results')
+        .delete()
+        .eq('id', resultId);
+
+      if (error) throw error;
+      
+      setResultsHistory(prev => prev.filter(r => r.id !== resultId));
+      if (selectedResult?.id === resultId) {
+        setSelectedResult(null);
+      }
+      toast.success('Result deleted successfully');
+    } catch (error) {
+      console.error('Error deleting result:', error);
+      toast.error('Failed to delete result');
     }
   };
 
@@ -577,75 +600,207 @@ const MLStudio = () => {
                     <p>No training results yet</p>
                     <p className="text-sm">Train your first model to see results here</p>
                   </div>
-                ) : (
-                  <div className="space-y-3 max-h-[600px] overflow-y-auto">
-                    {resultsHistory.map((result, index) => (
-                      <div key={result.id} className="border border-border rounded-lg p-4 hover:bg-muted/20 transition-smooth">
-                        <div className="flex justify-between items-start mb-2">
-                          <span className="font-medium text-sm">{result.problem_subtype} Model</span>
-                          <Badge variant="secondary" className="text-xs">
-                            {result.metrics?.accuracy 
-                              ? `${(result.metrics.accuracy * 100).toFixed(1)}%`
-                              : result.metrics?.r2_score 
-                              ? `R²: ${result.metrics.r2_score.toFixed(2)}`
-                              : result.metrics?.silhouette_score
-                              ? `Sil: ${result.metrics.silhouette_score.toFixed(2)}`
-                              : 'Completed'
-                            }
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground mb-3">
-                          {result.dataset_name} • {new Date(result.created_at).toLocaleDateString()}
-                        </p>
-                        
-                        {/* Show specific predictions if available */}
-                        {result.results?.specific_predictions && result.results.specific_predictions.length > 0 && (
-                          <div className="bg-accent/10 rounded-md p-2 mb-2">
-                            <div className="text-xs font-medium mb-1">Key Predictions:</div>
-                            <div className="text-xs text-muted-foreground">
-                              {result.results.specific_predictions.slice(0, 2).map((prediction: string, idx: number) => (
-                                <div key={idx} className="truncate">• {prediction}</div>
-                              ))}
-                              {result.results.specific_predictions.length > 2 && (
-                                <div className="text-xs opacity-75">
-                                  +{result.results.specific_predictions.length - 2} more predictions
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Show metrics summary */}
-                        <div className="grid grid-cols-2 gap-2 text-xs">
-                          {result.metrics?.accuracy && (
-                            <div>
-                              <span className="text-muted-foreground">Accuracy:</span>
-                              <span className="ml-1 font-medium">{(result.metrics.accuracy * 100).toFixed(1)}%</span>
-                            </div>
-                          )}
-                          {result.metrics?.f1_score && (
-                            <div>
-                              <span className="text-muted-foreground">F1:</span>
-                              <span className="ml-1 font-medium">{result.metrics.f1_score.toFixed(3)}</span>
-                            </div>
-                          )}
-                          {result.metrics?.r2_score && (
-                            <div>
-                              <span className="text-muted-foreground">R²:</span>
-                              <span className="ml-1 font-medium">{result.metrics.r2_score.toFixed(3)}</span>
-                            </div>
-                          )}
-                          {result.metrics?.rmse && (
-                            <div>
-                              <span className="text-muted-foreground">RMSE:</span>
-                              <span className="ml-1 font-medium">{result.metrics.rmse.toFixed(1)}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                 ) : (
+                   <div className="space-y-3 max-h-[600px] overflow-y-auto">
+                     {resultsHistory.map((result, index) => (
+                       <div key={result.id} className="border border-border rounded-lg p-4 hover:bg-muted/20 transition-smooth cursor-pointer group">
+                         <div className="flex justify-between items-start mb-2">
+                           <span className="font-medium text-sm">{result.problem_subtype} Model</span>
+                           <div className="flex items-center gap-2">
+                             <Badge variant="secondary" className="text-xs">
+                               {result.metrics?.accuracy 
+                                 ? `${(result.metrics.accuracy * 100).toFixed(1)}%`
+                                 : result.metrics?.r2_score 
+                                 ? `R²: ${result.metrics.r2_score.toFixed(2)}`
+                                 : result.metrics?.silhouette_score
+                                 ? `Sil: ${result.metrics.silhouette_score.toFixed(2)}`
+                                 : 'Completed'
+                               }
+                             </Badge>
+                             <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                               <Button
+                                 size="sm"
+                                 variant="ghost"
+                                 className="h-6 w-6 p-0"
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   setSelectedResult(result);
+                                 }}
+                               >
+                                 <Eye className="h-3 w-3" />
+                               </Button>
+                               <Button
+                                 size="sm"
+                                 variant="ghost"
+                                 className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   handleDeleteResult(result.id);
+                                 }}
+                               >
+                                 <Trash2 className="h-3 w-3" />
+                               </Button>
+                             </div>
+                           </div>
+                         </div>
+                         <p className="text-xs text-muted-foreground mb-3">
+                           {result.dataset_name} • {new Date(result.created_at).toLocaleDateString()}
+                         </p>
+                         
+                         {/* Show specific predictions if available */}
+                         {result.results?.specific_predictions && result.results.specific_predictions.length > 0 && (
+                           <div className="bg-accent/10 rounded-md p-2 mb-2">
+                             <div className="text-xs font-medium mb-1">Key Predictions:</div>
+                             <div className="text-xs text-muted-foreground">
+                               {result.results.specific_predictions.slice(0, 2).map((prediction: string, idx: number) => (
+                                 <div key={idx} className="truncate">• {prediction}</div>
+                               ))}
+                               {result.results.specific_predictions.length > 2 && (
+                                 <div className="text-xs opacity-75">
+                                   +{result.results.specific_predictions.length - 2} more predictions
+                                 </div>
+                               )}
+                             </div>
+                           </div>
+                         )}
+                         
+                         {/* Show metrics summary */}
+                         <div className="grid grid-cols-2 gap-2 text-xs">
+                           {result.metrics?.accuracy && (
+                             <div>
+                               <span className="text-muted-foreground">Accuracy:</span>
+                               <span className="ml-1 font-medium">{(result.metrics.accuracy * 100).toFixed(1)}%</span>
+                             </div>
+                           )}
+                           {result.metrics?.f1_score && (
+                             <div>
+                               <span className="text-muted-foreground">F1:</span>
+                               <span className="ml-1 font-medium">{result.metrics.f1_score.toFixed(3)}</span>
+                             </div>
+                           )}
+                           {result.metrics?.r2_score && (
+                             <div>
+                               <span className="text-muted-foreground">R²:</span>
+                               <span className="ml-1 font-medium">{result.metrics.r2_score.toFixed(3)}</span>
+                             </div>
+                           )}
+                           {result.metrics?.rmse && (
+                             <div>
+                               <span className="text-muted-foreground">RMSE:</span>
+                               <span className="ml-1 font-medium">{result.metrics.rmse.toFixed(1)}</span>
+                             </div>
+                           )}
+                         </div>
+                       </div>
+                     ))}
+                   </div>
+                 )}
+                 
+                 {/* Selected Result Modal/Detailed View */}
+                 {selectedResult && (
+                   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                     <div className="bg-background rounded-lg p-6 max-w-4xl max-h-[80vh] overflow-y-auto w-full mx-4">
+                       <div className="flex justify-between items-start mb-4">
+                         <div>
+                           <h3 className="text-lg font-semibold">{selectedResult.problem_subtype} Model Results</h3>
+                           <p className="text-sm text-muted-foreground">
+                             {selectedResult.dataset_name} • {new Date(selectedResult.created_at).toLocaleDateString()}
+                           </p>
+                         </div>
+                         <Button variant="ghost" onClick={() => setSelectedResult(null)}>
+                           ×
+                         </Button>
+                       </div>
+                       
+                       {/* Full Results Display */}
+                       <div className="space-y-6">
+                         {/* Metrics */}
+                         {selectedResult.metrics && Object.keys(selectedResult.metrics).length > 0 && (
+                           <div>
+                             <h4 className="font-medium mb-3">Performance Metrics</h4>
+                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                               {Object.entries(selectedResult.metrics).map(([key, value]) => (
+                                 <div key={key} className="bg-muted/30 rounded-lg p-3">
+                                   <div className="text-sm text-muted-foreground capitalize">
+                                     {key.replace(/_/g, ' ')}
+                                   </div>
+                                   <div className="text-xl font-bold">
+                                     {typeof value === 'number' 
+                                       ? (key.includes('accuracy') || key.includes('score') 
+                                         ? (value * 100).toFixed(1) + '%' 
+                                         : value.toFixed(3))
+                                       : String(value)
+                                     }
+                                   </div>
+                                 </div>
+                               ))}
+                             </div>
+                           </div>
+                         )}
+                         
+                         {/* Predictions */}
+                         {selectedResult.results?.specific_predictions && (
+                           <div>
+                             <h4 className="font-medium mb-3">Specific Predictions</h4>
+                             <div className="bg-accent/10 rounded-lg p-4">
+                               <div className="space-y-2">
+                                 {selectedResult.results.specific_predictions.map((prediction: string, idx: number) => (
+                                   <div key={idx} className="text-sm">• {prediction}</div>
+                                 ))}
+                               </div>
+                             </div>
+                           </div>
+                         )}
+                         
+                         {/* Insights */}
+                         {selectedResult.results?.insights && (
+                           <div>
+                             <h4 className="font-medium mb-3">Key Insights</h4>
+                             <div className="bg-accent/10 rounded-lg p-4">
+                               <div className="space-y-2">
+                                 {Array.isArray(selectedResult.results.insights) 
+                                   ? selectedResult.results.insights.map((insight: string, idx: number) => (
+                                       <div key={idx} className="text-sm">• {insight}</div>
+                                     ))
+                                   : <div className="text-sm">{selectedResult.results.insights}</div>
+                                 }
+                               </div>
+                             </div>
+                           </div>
+                         )}
+                         
+                         {/* Recommendations */}
+                         {selectedResult.results?.recommendations && (
+                           <div>
+                             <h4 className="font-medium mb-3">Recommendations</h4>
+                             <div className="bg-primary/10 rounded-lg p-4">
+                               <div className="space-y-2">
+                                 {selectedResult.results.recommendations.map((rec: string, idx: number) => (
+                                   <div key={idx} className="text-sm">• {rec}</div>
+                                 ))}
+                               </div>
+                             </div>
+                           </div>
+                         )}
+                         
+                         {/* Feature Importance */}
+                         {selectedResult.results?.feature_importance && selectedResult.results.feature_importance.length > 0 && (
+                           <div>
+                             <h4 className="font-medium mb-3">Feature Importance</h4>
+                             <div className="space-y-2">
+                               {selectedResult.results.feature_importance.map((feature: any, idx: number) => (
+                                 <div key={idx} className="flex justify-between items-center p-2 bg-muted/20 rounded">
+                                   <span className="text-sm font-medium">{feature.feature}</span>
+                                   <span className="text-sm">{(feature.importance * 100).toFixed(1)}%</span>
+                                 </div>
+                               ))}
+                             </div>
+                           </div>
+                         )}
+                       </div>
+                     </div>
+                   </div>
+                 )}
               </CardContent>
             </Card>
           </div>
