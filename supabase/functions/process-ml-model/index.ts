@@ -74,18 +74,64 @@ serve(async (req) => {
 
     const dataset = model.datasets;
     
-    // Get actual data file content from storage
+    // Get actual data file content from storage and parse CSV
     let dataContent = '';
+    let csvHeaders: string[] = [];
+    let csvRows: string[][] = [];
+    let dataSummary = '';
+    
     try {
       const { data: fileData, error: fileError } = await supabaseClient.storage
         .from('datasets')
         .download(dataset.storage_path);
       
       if (!fileError && fileData) {
-        // Read first 1000 characters for analysis
         const text = await fileData.text();
-        dataContent = text.substring(0, 1000);
-        console.log('Successfully loaded data file content');
+        
+        // Parse CSV properly
+        if (dataset.file_type === 'text/csv' || dataset.original_filename.endsWith('.csv')) {
+          const lines = text.split('\n').filter(line => line.trim().length > 0);
+          
+          if (lines.length > 0) {
+            // Parse headers
+            csvHeaders = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            
+            // Parse first 20 rows of data
+            csvRows = lines.slice(1, Math.min(21, lines.length)).map(line => 
+              line.split(',').map(cell => cell.trim().replace(/"/g, ''))
+            );
+            
+            // Create data summary
+            dataSummary = `
+CSV Structure:
+Headers: ${csvHeaders.join(', ')}
+
+Sample Data (first 20 rows):
+${csvRows.map((row, i) => `Row ${i + 1}: ${row.join(', ')}`).join('\n')}
+
+Total Rows: ${dataset.row_count || lines.length - 1}
+Total Columns: ${csvHeaders.length}
+            `;
+            
+            dataContent = `CSV File with ${csvHeaders.length} columns and ${dataset.row_count || lines.length - 1} rows.
+            
+Headers: ${csvHeaders.join(', ')}
+
+First 20 data rows:
+${csvRows.map(row => csvHeaders.map((header, i) => `${header}: ${row[i] || 'N/A'}`).join(' | ')).join('\n')}`;
+            
+            console.log('Successfully parsed CSV file:', {
+              headers: csvHeaders,
+              rowCount: csvRows.length,
+              totalRows: dataset.row_count
+            });
+          }
+        } else {
+          // For non-CSV files, just take first 2000 characters
+          dataContent = text.substring(0, 2000);
+        }
+        
+        console.log('Successfully loaded and parsed data file');
       } else {
         console.warn('Could not load data file:', fileError);
         dataContent = 'Sample data not available';
@@ -95,28 +141,30 @@ serve(async (req) => {
       dataContent = 'Sample data not available';
     }
 
-    // Create detailed prompt with actual data
+    // Create detailed prompt with actual parsed data
     const prompt = `
-You are an expert data scientist analyzing REAL data for ML predictions. Based on the actual dataset content and configuration below, provide specific, realistic predictions and insights:
+You are an expert data scientist analyzing REAL CSV data for ML predictions. Based on the actual parsed dataset content and configuration below, provide specific, realistic predictions and insights:
 
-**ACTUAL DATASET CONTENT (first 1000 chars):**
+**ACTUAL PARSED CSV DATA:**
 ${dataContent}
 
 **Dataset Information:**
 - Name: ${dataset.name}
 - File: ${dataset.original_filename}
 - Type: ${dataset.file_type}
-- Rows: ${dataset.row_count || 'Unknown'}
-- Columns: ${dataset.column_count || 'Unknown'}
+- Total Rows: ${dataset.row_count || 'Unknown'}
+- Total Columns: ${dataset.column_count || csvHeaders.length}
+- Column Names: ${csvHeaders.join(', ')}
 
 **ML Model Configuration:**
 - Problem Type: ${model.problem_type}
 - Problem Subtype: ${model.problem_subtype} 
 - Model Name: ${model.name}
 
-**SPECIFIC REQUIREMENTS:**
-1. Analyze the ACTUAL data content provided above
-2. For ${model.problem_subtype} prediction, provide SPECIFIC numeric predictions based on the data patterns you see
+**CRITICAL REQUIREMENTS:**
+1. ANALYZE THE ACTUAL CSV DATA provided above - look at the real column names and values
+2. For ${model.problem_subtype} prediction, provide SPECIFIC numeric predictions based on ACTUAL data patterns
+3. Use the real column names from the CSV in your analysis
 3. If this is revenue/sales data, predict specific dollar amounts for next period
 4. If this is customer data, predict specific customer behaviors
 5. Include confidence intervals for your predictions

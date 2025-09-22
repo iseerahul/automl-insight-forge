@@ -247,9 +247,9 @@ const MLStudio = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           {/* Configuration Panel */}
-          <div className="xl:col-span-2 space-y-6">
+          <div className="space-y-6">
             {/* Step 1: Data Selection */}
             <Card className="shadow-card">
               <CardHeader>
@@ -561,63 +561,91 @@ const MLStudio = () => {
             </Card>
           </div>
 
-          {/* Info Panel */}
+          {/* Results History Panel */}
           <div className="space-y-6">
             <Card className="shadow-card">
               <CardHeader>
-                <CardTitle className="text-lg">Training Status</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Active Models</span>
-                  <span className="font-semibold">3</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">In Training</span>
-                  <span className="font-semibold">{isTraining ? "1" : "0"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Deployed</span>
-                  <span className="font-semibold">2</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle className="text-lg">Recent Models</CardTitle>
+                <CardTitle className="text-lg">Results History</CardTitle>
+                <CardDescription>
+                  View your previous model training results
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="border border-border rounded-lg p-3">
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="font-medium text-sm">Churn Prediction</span>
-                    <Badge variant="secondary">94.2%</Badge>
+                {resultsHistory.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Brain className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>No training results yet</p>
+                    <p className="text-sm">Train your first model to see results here</p>
                   </div>
-                  <p className="text-xs text-muted-foreground">Customer Dataset • 2 hours ago</p>
-                </div>
-                <div className="border border-border rounded-lg p-3">
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="font-medium text-sm">Revenue Forecast</span>
-                    <Badge variant="secondary">87.6%</Badge>
+                ) : (
+                  <div className="space-y-3 max-h-[600px] overflow-y-auto">
+                    {resultsHistory.map((result, index) => (
+                      <div key={result.id} className="border border-border rounded-lg p-4 hover:bg-muted/20 transition-smooth">
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="font-medium text-sm">{result.problem_subtype} Model</span>
+                          <Badge variant="secondary" className="text-xs">
+                            {result.metrics?.accuracy 
+                              ? `${(result.metrics.accuracy * 100).toFixed(1)}%`
+                              : result.metrics?.r2_score 
+                              ? `R²: ${result.metrics.r2_score.toFixed(2)}`
+                              : result.metrics?.silhouette_score
+                              ? `Sil: ${result.metrics.silhouette_score.toFixed(2)}`
+                              : 'Completed'
+                            }
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-3">
+                          {result.dataset_name} • {new Date(result.created_at).toLocaleDateString()}
+                        </p>
+                        
+                        {/* Show specific predictions if available */}
+                        {result.results?.specific_predictions && result.results.specific_predictions.length > 0 && (
+                          <div className="bg-accent/10 rounded-md p-2 mb-2">
+                            <div className="text-xs font-medium mb-1">Key Predictions:</div>
+                            <div className="text-xs text-muted-foreground">
+                              {result.results.specific_predictions.slice(0, 2).map((prediction: string, idx: number) => (
+                                <div key={idx} className="truncate">• {prediction}</div>
+                              ))}
+                              {result.results.specific_predictions.length > 2 && (
+                                <div className="text-xs opacity-75">
+                                  +{result.results.specific_predictions.length - 2} more predictions
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Show metrics summary */}
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          {result.metrics?.accuracy && (
+                            <div>
+                              <span className="text-muted-foreground">Accuracy:</span>
+                              <span className="ml-1 font-medium">{(result.metrics.accuracy * 100).toFixed(1)}%</span>
+                            </div>
+                          )}
+                          {result.metrics?.f1_score && (
+                            <div>
+                              <span className="text-muted-foreground">F1:</span>
+                              <span className="ml-1 font-medium">{result.metrics.f1_score.toFixed(3)}</span>
+                            </div>
+                          )}
+                          {result.metrics?.r2_score && (
+                            <div>
+                              <span className="text-muted-foreground">R²:</span>
+                              <span className="ml-1 font-medium">{result.metrics.r2_score.toFixed(3)}</span>
+                            </div>
+                          )}
+                          {result.metrics?.rmse && (
+                            <div>
+                              <span className="text-muted-foreground">RMSE:</span>
+                              <span className="ml-1 font-medium">{result.metrics.rmse.toFixed(1)}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <p className="text-xs text-muted-foreground">Sales Dataset • 1 day ago</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle className="text-lg">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button className="w-full justify-start" variant="outline">
-                  <Database className="w-4 h-4 mr-2" />
-                  Upload New Dataset
-                </Button>
-                <Button className="w-full justify-start" variant="outline">
-                  <Target className="w-4 h-4 mr-2" />
-                  Model Library
-                </Button>
+                )}
               </CardContent>
             </Card>
           </div>
