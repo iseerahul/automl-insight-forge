@@ -2,11 +2,112 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { read, utils } from "https://deno.land/x/sheetjs@v0.18.3/xlsx.mjs";
 
-// ML Libraries for JavaScript
-import { Matrix } from "https://esm.sh/ml-matrix@6.10.4";
-import { SimpleLinearRegression, PolynomialRegression } from "https://esm.sh/ml-regression@6.1.3";
-import { KMeans } from "https://esm.sh/ml-kmeans@6.0.0";
-import * as ss from "https://esm.sh/simple-statistics@7.8.3";
+// Native ML implementations for edge functions
+class SimpleLinearRegression {
+  slope: number = 0;
+  intercept: number = 0;
+  
+  constructor(x: number[], y: number[]) {
+    const n = x.length;
+    const sumX = x.reduce((a, b) => a + b, 0);
+    const sumY = y.reduce((a, b) => a + b, 0);
+    const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
+    const sumXX = x.reduce((sum, xi) => sum + xi * xi, 0);
+    
+    this.slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+    this.intercept = (sumY - this.slope * sumX) / n;
+  }
+  
+  predict(x: number): number {
+    return this.slope * x + this.intercept;
+  }
+}
+
+class KMeans {
+  centroids: number[][] = [];
+  clusters: Array<{centroid: number[], size: number}> = [];
+  totalWithinClusterSumSquares: number = 0;
+  
+  constructor(data: number[][], k: number) {
+    if (data.length === 0 || k <= 0) return;
+    
+    // Initialize centroids randomly
+    this.centroids = [];
+    for (let i = 0; i < k; i++) {
+      const randomIndex = Math.floor(Math.random() * data.length);
+      this.centroids.push([...data[randomIndex]]);
+    }
+    
+    // Run k-means for 10 iterations
+    for (let iter = 0; iter < 10; iter++) {
+      const assignments = data.map(point => this.nearest(point)[1]);
+      
+      // Update centroids
+      for (let i = 0; i < k; i++) {
+        const clusterPoints = data.filter((_, idx) => assignments[idx] === i);
+        if (clusterPoints.length > 0) {
+          this.centroids[i] = this.centroid(clusterPoints);
+        }
+      }
+    }
+    
+    // Calculate final metrics
+    const finalAssignments = data.map(point => this.nearest(point)[1]);
+    this.clusters = this.centroids.map((centroid, i) => ({
+      centroid,
+      size: finalAssignments.filter(a => a === i).length
+    }));
+    
+    this.totalWithinClusterSumSquares = data.reduce((sum, point, idx) => {
+      const centroid = this.centroids[finalAssignments[idx]];
+      return sum + this.distance(point, centroid);
+    }, 0);
+  }
+  
+  nearest(point: number[]): [number, number] {
+    let minDist = Infinity;
+    let nearestIdx = 0;
+    
+    for (let i = 0; i < this.centroids.length; i++) {
+      const dist = this.distance(point, this.centroids[i]);
+      if (dist < minDist) {
+        minDist = dist;
+        nearestIdx = i;
+      }
+    }
+    
+    return [minDist, nearestIdx];
+  }
+  
+  private distance(a: number[], b: number[]): number {
+    return Math.sqrt(a.reduce((sum, val, i) => sum + Math.pow(val - (b[i] || 0), 2), 0));
+  }
+  
+  private centroid(points: number[][]): number[] {
+    if (points.length === 0) return [];
+    const dims = points[0].length;
+    const result = new Array(dims).fill(0);
+    
+    for (const point of points) {
+      for (let i = 0; i < dims; i++) {
+        result[i] += point[i] || 0;
+      }
+    }
+    
+    return result.map(sum => sum / points.length);
+  }
+}
+
+// Simple statistics functions
+const ss = {
+  mean: (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length,
+  sum: (arr: number[]) => arr.reduce((a, b) => a + b, 0),
+  variance: (arr: number[]) => {
+    const mean = ss.mean(arr);
+    return ss.mean(arr.map(x => Math.pow(x - mean, 2)));
+  },
+  standardDeviation: (arr: number[]) => Math.sqrt(ss.variance(arr))
+};
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -296,7 +397,7 @@ Focus on business value and actionable insights rather than technical details.`;
         status: 'completed',
         training_progress: 100,
         results: finalResults,
-        metrics: mlResults.metrics
+        metrics: (mlResults as any).metrics || {}
       })
       .eq('id', modelId)
       .select()
@@ -347,13 +448,13 @@ Focus on business value and actionable insights rather than technical details.`;
 });
 
 // ML Pipeline Processing
-async function processMLPipeline(headers: string[], rows: string[][], model: any, dataset: any) {
+async function processMLPipeline(headers: string[], rows: string[][], model: any, dataset: any): Promise<any> {
   console.log('Starting ML pipeline processing...');
   
   // Data preprocessing
   const processedData = preprocessData(headers, rows);
   
-  let results = {};
+  let results: any = {};
   
   switch (model.problem_type) {
     case 'classification':
@@ -428,13 +529,13 @@ async function runClassification(processedData: any, model: any) {
   }
   
   // Use last column as target, rest as features
-  const features = data.map(row => row.slice(0, -1));
-  const target = data.map(row => row[row.length - 1]);
+  const features = data.map((row: number[]) => row.slice(0, -1));
+  const target = data.map((row: number[]) => row[row.length - 1]);
   
   // Simple threshold-based classification for demo
   const threshold = ss.mean(target);
   const predictions = features.map(() => Math.random() > 0.5 ? 1 : 0);
-  const actualBinary = target.map(val => val > threshold ? 1 : 0);
+  const actualBinary = target.map((val: number) => val > threshold ? 1 : 0);
   
   // Calculate metrics
   const accuracy = calculateAccuracy(predictions, actualBinary);
@@ -468,13 +569,13 @@ async function runRegression(processedData: any, model: any) {
   }
   
   // Use last column as target, first column as primary feature
-  const x = data.map(row => row[0]);
-  const y = data.map(row => row[row.length - 1]);
+  const x = data.map((row: number[]) => row[0]);
+  const y = data.map((row: number[]) => row[row.length - 1]);
   
   // Simple linear regression
   const regression = new SimpleLinearRegression(x, y);
   
-  const predictions = x.map(val => regression.predict(val));
+  const predictions = x.map((val: number) => regression.predict(val));
   
   // Calculate metrics
   const rmse = calculateRMSE(y, predictions);
@@ -515,7 +616,7 @@ async function runClustering(processedData: any, model: any) {
   const kmeans = new KMeans(data, numClusters);
   
   const clusters = kmeans.clusters.map(cluster => cluster.centroid);
-  const assignments = data.map((point, idx) => kmeans.nearest(point)[1]);
+  const assignments = data.map((point: number[], idx: number) => kmeans.nearest(point)[1]);
   
   // Calculate silhouette score approximation
   const silhouetteScore = 0.6 + Math.random() * 0.3;
