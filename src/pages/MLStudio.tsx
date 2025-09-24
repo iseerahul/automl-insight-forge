@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MLVisualization } from "@/components/MLVisualization";
 import { 
   Brain, 
   Database, 
@@ -21,7 +23,11 @@ import {
   DollarSign,
   AlertTriangle,
   Trash2,
-  Eye
+  Eye,
+  BarChart3,
+  FileText,
+  Lightbulb,
+  Settings2
 } from "lucide-react";
 
 const MLStudio = () => {
@@ -469,103 +475,282 @@ const MLStudio = () => {
                     </div>
                     {modelResults && (
                       <div className="mt-4">
-                        <h4 className="font-medium mb-3">Model Results</h4>
-                         {/* Metrics Display */}
-                         <div className="grid grid-cols-2 gap-4 mb-4">
-                           {modelResults.metrics?.accuracy && (
-                             <div className="bg-muted/30 rounded-lg p-3">
-                               <div className="text-sm text-muted-foreground">Accuracy</div>
-                               <div className="text-xl font-bold text-success">
-                                 {(modelResults.metrics.accuracy * 100).toFixed(1)}%
-                               </div>
-                             </div>
-                           )}
-                           {modelResults.metrics?.f1_score && (
-                             <div className="bg-muted/30 rounded-lg p-3">
-                               <div className="text-sm text-muted-foreground">F1 Score</div>
-                               <div className="text-xl font-bold text-primary">
-                                 {modelResults.metrics.f1_score.toFixed(3)}
-                               </div>
-                             </div>
-                           )}
-                           {modelResults.metrics?.r2_score && (
-                             <div className="bg-muted/30 rounded-lg p-3">
-                               <div className="text-sm text-muted-foreground">R² Score</div>
-                               <div className="text-xl font-bold text-success">
-                                 {modelResults.metrics.r2_score.toFixed(3)}
-                               </div>
-                             </div>
-                           )}
-                           {modelResults.metrics?.rmse && (
-                             <div className="bg-muted/30 rounded-lg p-3">
-                               <div className="text-sm text-muted-foreground">RMSE</div>
-                               <div className="text-xl font-bold text-primary">
-                                 {modelResults.metrics.rmse.toFixed(1)}
-                               </div>
-                             </div>
-                           )}
-                           {modelResults.metrics?.silhouette_score && (
-                             <div className="bg-muted/30 rounded-lg p-3">
-                               <div className="text-sm text-muted-foreground">Silhouette Score</div>
-                               <div className="text-xl font-bold text-success">
-                                 {modelResults.metrics.silhouette_score.toFixed(3)}
-                               </div>
-                             </div>
-                           )}
-                           {modelResults.metrics?.davies_bouldin_index && (
-                             <div className="bg-muted/30 rounded-lg p-3">
-                               <div className="text-sm text-muted-foreground">Davies-Bouldin Index</div>
-                               <div className="text-xl font-bold text-primary">
-                                 {modelResults.metrics.davies_bouldin_index.toFixed(3)}
-                               </div>
-                             </div>
-                           )}
-                         </div>
+                        <Tabs defaultValue="summary" className="w-full">
+                          <TabsList className="grid w-full grid-cols-5">
+                            <TabsTrigger value="summary" className="flex items-center">
+                              <FileText className="w-4 h-4 mr-1" />
+                              Summary
+                            </TabsTrigger>
+                            <TabsTrigger value="metrics" className="flex items-center">
+                              <BarChart3 className="w-4 h-4 mr-1" />
+                              Metrics
+                            </TabsTrigger>
+                            <TabsTrigger value="charts" className="flex items-center">
+                              <TrendingUp className="w-4 h-4 mr-1" />
+                              Charts
+                            </TabsTrigger>
+                            <TabsTrigger value="insights" className="flex items-center">
+                              <Lightbulb className="w-4 h-4 mr-1" />
+                              Insights
+                            </TabsTrigger>
+                            <TabsTrigger value="details" className="flex items-center">
+                              <Settings2 className="w-4 h-4 mr-1" />
+                              Details
+                            </TabsTrigger>
+                          </TabsList>
 
-                         {/* Specific Predictions */}
-                         {modelResults.results?.specific_predictions && (
-                           <div className="bg-accent/10 rounded-lg p-4 mb-4">
-                             <div className="text-sm font-medium mb-2">Specific Predictions</div>
-                             <div className="space-y-1">
-                               {modelResults.results.specific_predictions.map((prediction: string, idx: number) => (
-                                 <div key={idx} className="text-sm text-muted-foreground">
-                                   • {prediction}
-                                 </div>
-                               ))}
-                             </div>
-                           </div>
-                         )}
+                          {/* Summary Tab */}
+                          <TabsContent value="summary" className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              {/* Key Metric */}
+                              {modelResults.metrics?.accuracy && (
+                                <div className="bg-gradient-to-br from-success/10 to-success/5 rounded-lg p-4 border border-success/20">
+                                  <div className="text-sm text-muted-foreground">Model Accuracy</div>
+                                  <div className="text-2xl font-bold text-success">
+                                    {(modelResults.metrics.accuracy * 100).toFixed(1)}%
+                                  </div>
+                                </div>
+                              )}
+                              {modelResults.metrics?.r2_score && (
+                                <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg p-4 border border-primary/20">
+                                  <div className="text-sm text-muted-foreground">R² Score</div>
+                                  <div className="text-2xl font-bold text-primary">
+                                    {modelResults.metrics.r2_score.toFixed(3)}
+                                  </div>
+                                </div>
+                              )}
+                              {modelResults.metrics?.silhouette_score && (
+                                <div className="bg-gradient-to-br from-accent/10 to-accent/5 rounded-lg p-4 border border-accent/20">
+                                  <div className="text-sm text-muted-foreground">Silhouette Score</div>
+                                  <div className="text-2xl font-bold text-accent">
+                                    {modelResults.metrics.silhouette_score.toFixed(3)}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
 
-                         {/* Insights */}
-                         {modelResults.results?.insights && (
-                           <div className="bg-accent/10 rounded-lg p-3 mb-4">
-                             <div className="text-sm font-medium mb-2">Key Insights</div>
-                             <div className="space-y-1">
-                               {Array.isArray(modelResults.results.insights) ? 
-                                 modelResults.results.insights.map((insight: string, idx: number) => (
-                                   <div key={idx} className="text-sm text-muted-foreground">
-                                     • {insight}
-                                   </div>
-                                 )) : 
-                                 <div className="text-sm text-muted-foreground">{modelResults.results.insights}</div>
-                               }
-                             </div>
-                           </div>
-                         )}
+                            {/* Quick Insights */}
+                            {modelResults.results?.ai_insights?.key_insights && (
+                              <div className="bg-accent/10 rounded-lg p-4">
+                                <h4 className="font-medium mb-3 flex items-center">
+                                  <Lightbulb className="w-4 h-4 mr-2" />
+                                  Key Insights
+                                </h4>
+                                <div className="space-y-2">
+                                  {modelResults.results.ai_insights.key_insights.slice(0, 3).map((insight: string, idx: number) => (
+                                    <div key={idx} className="text-sm flex items-start">
+                                      <div className="w-2 h-2 rounded-full bg-accent mt-2 mr-3 flex-shrink-0" />
+                                      {insight}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
 
-                         {/* Recommendations */}
-                         {modelResults.results?.recommendations && (
-                           <div className="bg-primary/10 rounded-lg p-3">
-                             <div className="text-sm font-medium mb-2">Recommendations</div>
-                             <div className="space-y-1">
-                               {modelResults.results.recommendations.map((rec: string, idx: number) => (
-                                 <div key={idx} className="text-sm text-muted-foreground">
-                                   • {rec}
-                                 </div>
-                               ))}
-                             </div>
-                           </div>
-                         )}
+                            {/* Next Steps */}
+                            {modelResults.results?.ai_insights?.business_recommendations && (
+                              <div className="bg-primary/10 rounded-lg p-4">
+                                <h4 className="font-medium mb-3">Recommended Actions</h4>
+                                <div className="space-y-2">
+                                  {modelResults.results.ai_insights.business_recommendations.slice(0, 2).map((rec: string, idx: number) => (
+                                    <div key={idx} className="text-sm flex items-start">
+                                      <CheckCircle className="w-4 h-4 mr-2 mt-0.5 text-primary flex-shrink-0" />
+                                      {rec}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </TabsContent>
+
+                          {/* Metrics Tab */}
+                          <TabsContent value="metrics" className="space-y-4">
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                              {Object.entries(modelResults.metrics || {}).map(([key, value]) => (
+                                <div key={key} className="bg-muted/30 rounded-lg p-4">
+                                  <div className="text-sm text-muted-foreground capitalize mb-1">
+                                    {key.replace(/_/g, ' ')}
+                                  </div>
+                                  <div className="text-xl font-bold">
+                                    {typeof value === 'number' 
+                                      ? (key.includes('accuracy') || key.includes('score') 
+                                        ? (value * 100).toFixed(1) + '%' 
+                                        : value.toFixed(3))
+                                      : String(value)
+                                    }
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Feature Importance */}
+                            {modelResults.results?.feature_importance && (
+                              <div className="bg-muted/20 rounded-lg p-4">
+                                <h4 className="font-medium mb-3">Feature Importance</h4>
+                                <div className="space-y-3">
+                                  {modelResults.results.feature_importance.slice(0, 5).map((feature: any, idx: number) => (
+                                    <div key={idx} className="flex items-center justify-between">
+                                      <span className="text-sm font-medium">{feature.feature}</span>
+                                      <div className="flex items-center space-x-2">
+                                        <div className="w-32 bg-muted rounded-full h-2 overflow-hidden">
+                                          <div 
+                                            className="h-full bg-primary transition-all"
+                                            style={{ width: `${feature.importance * 100}%` }}
+                                          />
+                                        </div>
+                                        <span className="text-sm text-muted-foreground w-12 text-right">
+                                          {(feature.importance * 100).toFixed(0)}%
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </TabsContent>
+
+                          {/* Charts Tab */}
+                          <TabsContent value="charts" className="space-y-4">
+                            <MLVisualization 
+                              results={modelResults.results} 
+                              problemType={selectedProblem} 
+                            />
+                          </TabsContent>
+
+                          {/* Insights Tab */}
+                          <TabsContent value="insights" className="space-y-4">
+                            {modelResults.results?.ai_insights ? (
+                              <div className="space-y-6">
+                                {/* Key Insights */}
+                                {modelResults.results.ai_insights.key_insights && (
+                                  <div className="bg-accent/10 rounded-lg p-4">
+                                    <h4 className="font-medium mb-3 flex items-center">
+                                      <Lightbulb className="w-4 h-4 mr-2" />
+                                      Key Insights
+                                    </h4>
+                                    <div className="space-y-3">
+                                      {modelResults.results.ai_insights.key_insights.map((insight: string, idx: number) => (
+                                        <div key={idx} className="flex items-start">
+                                          <div className="w-2 h-2 rounded-full bg-accent mt-2 mr-3 flex-shrink-0" />
+                                          <span className="text-sm">{insight}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Business Recommendations */}
+                                {modelResults.results.ai_insights.business_recommendations && (
+                                  <div className="bg-primary/10 rounded-lg p-4">
+                                    <h4 className="font-medium mb-3 flex items-center">
+                                      <CheckCircle className="w-4 h-4 mr-2" />
+                                      Business Recommendations
+                                    </h4>
+                                    <div className="space-y-3">
+                                      {modelResults.results.ai_insights.business_recommendations.map((rec: string, idx: number) => (
+                                        <div key={idx} className="flex items-start">
+                                          <CheckCircle className="w-4 h-4 mr-3 mt-0.5 text-primary flex-shrink-0" />
+                                          <span className="text-sm">{rec}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Risk Factors */}
+                                {modelResults.results.ai_insights.risk_factors && (
+                                  <div className="bg-destructive/10 rounded-lg p-4">
+                                    <h4 className="font-medium mb-3 flex items-center">
+                                      <AlertTriangle className="w-4 h-4 mr-2" />
+                                      Risk Factors
+                                    </h4>
+                                    <div className="space-y-3">
+                                      {modelResults.results.ai_insights.risk_factors.map((risk: string, idx: number) => (
+                                        <div key={idx} className="flex items-start">
+                                          <AlertTriangle className="w-4 h-4 mr-3 mt-0.5 text-destructive flex-shrink-0" />
+                                          <span className="text-sm">{risk}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Opportunities */}
+                                {modelResults.results.ai_insights.opportunities && (
+                                  <div className="bg-success/10 rounded-lg p-4">
+                                    <h4 className="font-medium mb-3 flex items-center">
+                                      <TrendingUp className="w-4 h-4 mr-2" />
+                                      Opportunities
+                                    </h4>
+                                    <div className="space-y-3">
+                                      {modelResults.results.ai_insights.opportunities.map((opp: string, idx: number) => (
+                                        <div key={idx} className="flex items-start">
+                                          <TrendingUp className="w-4 h-4 mr-3 mt-0.5 text-success flex-shrink-0" />
+                                          <span className="text-sm">{opp}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="text-center py-8 text-muted-foreground">
+                                <Lightbulb className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                                <p>No AI insights available for this model</p>
+                              </div>
+                            )}
+                          </TabsContent>
+
+                          {/* Details Tab */}
+                          <TabsContent value="details" className="space-y-4">
+                            {/* Model Configuration */}
+                            <div className="bg-muted/20 rounded-lg p-4">
+                              <h4 className="font-medium mb-3">Model Configuration</h4>
+                              <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                  <span className="text-muted-foreground">Problem Type:</span>
+                                  <div className="font-medium capitalize">{selectedProblem}</div>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Problem Subtype:</span>
+                                  <div className="font-medium">{getCurrentProblemTypes().find(p => p.id === selectedProblemType)?.name}</div>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Dataset:</span>
+                                  <div className="font-medium">{datasets.find(d => d.id === selectedDataset)?.name}</div>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Training Split:</span>
+                                  <div className="font-medium">80% / 20%</div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Raw Results */}
+                            {modelResults.results && (
+                              <div className="bg-muted/20 rounded-lg p-4">
+                                <h4 className="font-medium mb-3">Raw Results Data</h4>
+                                <pre className="text-xs bg-background rounded p-3 overflow-auto max-h-64">
+                                  {JSON.stringify(modelResults.results, null, 2)}
+                                </pre>
+                              </div>
+                            )}
+
+                            {/* Predictions Sample */}
+                            {modelResults.results?.predictions && (
+                              <div className="bg-muted/20 rounded-lg p-4">
+                                <h4 className="font-medium mb-3">Sample Predictions</h4>
+                                <div className="space-y-2">
+                                  {modelResults.results.predictions.slice(0, 10).map((pred: any, idx: number) => (
+                                    <div key={idx} className="text-sm bg-background rounded p-2">
+                                      Sample {idx + 1}: {typeof pred === 'number' ? pred.toFixed(3) : String(pred)}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </TabsContent>
+                        </Tabs>
                       </div>
                     )}
                     <Button 
@@ -696,111 +881,237 @@ const MLStudio = () => {
                    </div>
                  )}
                  
-                 {/* Selected Result Modal/Detailed View */}
-                 {selectedResult && (
-                   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                     <div className="bg-background rounded-lg p-6 max-w-4xl max-h-[80vh] overflow-y-auto w-full mx-4">
-                       <div className="flex justify-between items-start mb-4">
-                         <div>
-                           <h3 className="text-lg font-semibold">{selectedResult.problem_subtype} Model Results</h3>
-                           <p className="text-sm text-muted-foreground">
-                             {selectedResult.dataset_name} • {new Date(selectedResult.created_at).toLocaleDateString()}
-                           </p>
-                         </div>
-                         <Button variant="ghost" onClick={() => setSelectedResult(null)}>
-                           ×
-                         </Button>
-                       </div>
-                       
-                       {/* Full Results Display */}
-                       <div className="space-y-6">
-                         {/* Metrics */}
-                         {selectedResult.metrics && Object.keys(selectedResult.metrics).length > 0 && (
-                           <div>
-                             <h4 className="font-medium mb-3">Performance Metrics</h4>
-                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                               {Object.entries(selectedResult.metrics).map(([key, value]) => (
-                                 <div key={key} className="bg-muted/30 rounded-lg p-3">
-                                   <div className="text-sm text-muted-foreground capitalize">
-                                     {key.replace(/_/g, ' ')}
-                                   </div>
-                                   <div className="text-xl font-bold">
-                                     {typeof value === 'number' 
-                                       ? (key.includes('accuracy') || key.includes('score') 
-                                         ? (value * 100).toFixed(1) + '%' 
-                                         : value.toFixed(3))
-                                       : String(value)
-                                     }
-                                   </div>
-                                 </div>
-                               ))}
-                             </div>
-                           </div>
-                         )}
-                         
-                         {/* Predictions */}
-                         {selectedResult.results?.specific_predictions && (
-                           <div>
-                             <h4 className="font-medium mb-3">Specific Predictions</h4>
-                             <div className="bg-accent/10 rounded-lg p-4">
-                               <div className="space-y-2">
-                                 {selectedResult.results.specific_predictions.map((prediction: string, idx: number) => (
-                                   <div key={idx} className="text-sm">• {prediction}</div>
-                                 ))}
-                               </div>
-                             </div>
-                           </div>
-                         )}
-                         
-                         {/* Insights */}
-                         {selectedResult.results?.insights && (
-                           <div>
-                             <h4 className="font-medium mb-3">Key Insights</h4>
-                             <div className="bg-accent/10 rounded-lg p-4">
-                               <div className="space-y-2">
-                                 {Array.isArray(selectedResult.results.insights) 
-                                   ? selectedResult.results.insights.map((insight: string, idx: number) => (
-                                       <div key={idx} className="text-sm">• {insight}</div>
-                                     ))
-                                   : <div className="text-sm">{selectedResult.results.insights}</div>
-                                 }
-                               </div>
-                             </div>
-                           </div>
-                         )}
-                         
-                         {/* Recommendations */}
-                         {selectedResult.results?.recommendations && (
-                           <div>
-                             <h4 className="font-medium mb-3">Recommendations</h4>
-                             <div className="bg-primary/10 rounded-lg p-4">
-                               <div className="space-y-2">
-                                 {selectedResult.results.recommendations.map((rec: string, idx: number) => (
-                                   <div key={idx} className="text-sm">• {rec}</div>
-                                 ))}
-                               </div>
-                             </div>
-                           </div>
-                         )}
-                         
-                         {/* Feature Importance */}
-                         {selectedResult.results?.feature_importance && selectedResult.results.feature_importance.length > 0 && (
-                           <div>
-                             <h4 className="font-medium mb-3">Feature Importance</h4>
-                             <div className="space-y-2">
-                               {selectedResult.results.feature_importance.map((feature: any, idx: number) => (
-                                 <div key={idx} className="flex justify-between items-center p-2 bg-muted/20 rounded">
-                                   <span className="text-sm font-medium">{feature.feature}</span>
-                                   <span className="text-sm">{(feature.importance * 100).toFixed(1)}%</span>
-                                 </div>
-                               ))}
-                             </div>
-                           </div>
-                         )}
-                       </div>
-                     </div>
-                   </div>
-                 )}
+                  {/* Selected Result Modal/Detailed View */}
+                  {selectedResult && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                      <div className="bg-background rounded-lg p-6 max-w-5xl max-h-[80vh] overflow-y-auto w-full mx-4">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="text-lg font-semibold">{selectedResult.problem_subtype} Model Results</h3>
+                            <p className="text-sm text-muted-foreground">
+                              {selectedResult.dataset_name} • {new Date(selectedResult.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <Button variant="ghost" onClick={() => setSelectedResult(null)}>
+                            ×
+                          </Button>
+                        </div>
+                        
+                        {/* Full Results Display with Tabs */}
+                        <Tabs defaultValue="summary" className="w-full">
+                          <TabsList className="grid w-full grid-cols-5">
+                            <TabsTrigger value="summary">Summary</TabsTrigger>
+                            <TabsTrigger value="metrics">Metrics</TabsTrigger>
+                            <TabsTrigger value="charts">Charts</TabsTrigger>
+                            <TabsTrigger value="insights">Insights</TabsTrigger>
+                            <TabsTrigger value="details">Details</TabsTrigger>
+                          </TabsList>
+
+                          <TabsContent value="summary" className="space-y-4">
+                            {/* Key Metrics Summary */}
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                              {Object.entries(selectedResult.metrics || {}).slice(0, 3).map(([key, value]) => (
+                                <div key={key} className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg p-4 border border-primary/20">
+                                  <div className="text-sm text-muted-foreground capitalize">
+                                    {key.replace(/_/g, ' ')}
+                                  </div>
+                                  <div className="text-xl font-bold">
+                                    {typeof value === 'number' 
+                                      ? (key.includes('accuracy') || key.includes('score') 
+                                        ? (value * 100).toFixed(1) + '%' 
+                                        : value.toFixed(3))
+                                      : String(value)
+                                    }
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* AI Insights Summary */}
+                            {selectedResult.results?.ai_insights?.key_insights && (
+                              <div className="bg-accent/10 rounded-lg p-4">
+                                <h4 className="font-medium mb-3">Key Insights</h4>
+                                <div className="space-y-2">
+                                  {selectedResult.results.ai_insights.key_insights.slice(0, 3).map((insight: string, idx: number) => (
+                                    <div key={idx} className="text-sm flex items-start">
+                                      <div className="w-2 h-2 rounded-full bg-accent mt-2 mr-3 flex-shrink-0" />
+                                      {insight}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </TabsContent>
+
+                          <TabsContent value="metrics" className="space-y-4">
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                              {Object.entries(selectedResult.metrics || {}).map(([key, value]) => (
+                                <div key={key} className="bg-muted/30 rounded-lg p-3">
+                                  <div className="text-sm text-muted-foreground capitalize">
+                                    {key.replace(/_/g, ' ')}
+                                  </div>
+                                  <div className="text-xl font-bold">
+                                    {typeof value === 'number' 
+                                      ? (key.includes('accuracy') || key.includes('score') 
+                                        ? (value * 100).toFixed(1) + '%' 
+                                        : value.toFixed(3))
+                                      : String(value)
+                                    }
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Feature Importance */}
+                            {selectedResult.results?.feature_importance && (
+                              <div className="bg-muted/20 rounded-lg p-4">
+                                <h4 className="font-medium mb-3">Feature Importance</h4>
+                                <div className="space-y-3">
+                                  {selectedResult.results.feature_importance.slice(0, 8).map((feature: any, idx: number) => (
+                                    <div key={idx} className="flex items-center justify-between">
+                                      <span className="text-sm font-medium">{feature.feature}</span>
+                                      <div className="flex items-center space-x-2">
+                                        <div className="w-32 bg-muted rounded-full h-2 overflow-hidden">
+                                          <div 
+                                            className="h-full bg-primary transition-all"
+                                            style={{ width: `${feature.importance * 100}%` }}
+                                          />
+                                        </div>
+                                        <span className="text-sm text-muted-foreground w-12 text-right">
+                                          {(feature.importance * 100).toFixed(0)}%
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </TabsContent>
+
+                          <TabsContent value="charts" className="space-y-4">
+                            <MLVisualization 
+                              results={selectedResult.results} 
+                              problemType={selectedResult.problem_type} 
+                            />
+                          </TabsContent>
+
+                          <TabsContent value="insights" className="space-y-4">
+                            {selectedResult.results?.ai_insights ? (
+                              <div className="space-y-6">
+                                {selectedResult.results.ai_insights.key_insights && (
+                                  <div className="bg-accent/10 rounded-lg p-4">
+                                    <h4 className="font-medium mb-3">Key Insights</h4>
+                                    <div className="space-y-2">
+                                      {selectedResult.results.ai_insights.key_insights.map((insight: string, idx: number) => (
+                                        <div key={idx} className="text-sm flex items-start">
+                                          <div className="w-2 h-2 rounded-full bg-accent mt-2 mr-3 flex-shrink-0" />
+                                          {insight}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {selectedResult.results.ai_insights.business_recommendations && (
+                                  <div className="bg-primary/10 rounded-lg p-4">
+                                    <h4 className="font-medium mb-3">Business Recommendations</h4>
+                                    <div className="space-y-2">
+                                      {selectedResult.results.ai_insights.business_recommendations.map((rec: string, idx: number) => (
+                                        <div key={idx} className="text-sm flex items-start">
+                                          <CheckCircle className="w-4 h-4 mr-3 mt-0.5 text-primary flex-shrink-0" />
+                                          {rec}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {selectedResult.results.ai_insights.risk_factors && (
+                                  <div className="bg-destructive/10 rounded-lg p-4">
+                                    <h4 className="font-medium mb-3">Risk Factors</h4>
+                                    <div className="space-y-2">
+                                      {selectedResult.results.ai_insights.risk_factors.map((risk: string, idx: number) => (
+                                        <div key={idx} className="text-sm flex items-start">
+                                          <AlertTriangle className="w-4 h-4 mr-3 mt-0.5 text-destructive flex-shrink-0" />
+                                          {risk}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {selectedResult.results.ai_insights.opportunities && (
+                                  <div className="bg-success/10 rounded-lg p-4">
+                                    <h4 className="font-medium mb-3">Opportunities</h4>
+                                    <div className="space-y-2">
+                                      {selectedResult.results.ai_insights.opportunities.map((opp: string, idx: number) => (
+                                        <div key={idx} className="text-sm flex items-start">
+                                          <TrendingUp className="w-4 h-4 mr-3 mt-0.5 text-success flex-shrink-0" />
+                                          {opp}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="text-center py-8 text-muted-foreground">
+                                <Lightbulb className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                                <p>No AI insights available</p>
+                              </div>
+                            )}
+                          </TabsContent>
+
+                          <TabsContent value="details" className="space-y-4">
+                            {/* Model Configuration */}
+                            <div className="bg-muted/20 rounded-lg p-4">
+                              <h4 className="font-medium mb-3">Model Configuration</h4>
+                              <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                  <span className="text-muted-foreground">Problem Type:</span>
+                                  <div className="font-medium capitalize">{selectedResult.problem_type}</div>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Problem Subtype:</span>
+                                  <div className="font-medium">{selectedResult.problem_subtype}</div>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Dataset:</span>
+                                  <div className="font-medium">{selectedResult.dataset_name}</div>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Created:</span>
+                                  <div className="font-medium">{new Date(selectedResult.created_at).toLocaleDateString()}</div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Predictions */}
+                            {selectedResult.results?.predictions && (
+                              <div className="bg-muted/20 rounded-lg p-4">
+                                <h4 className="font-medium mb-3">Sample Predictions</h4>
+                                <div className="space-y-2 max-h-48 overflow-y-auto">
+                                  {selectedResult.results.predictions.slice(0, 20).map((pred: any, idx: number) => (
+                                    <div key={idx} className="text-sm bg-background rounded p-2">
+                                      Sample {idx + 1}: {typeof pred === 'number' ? pred.toFixed(3) : String(pred)}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Raw Data */}
+                            <div className="bg-muted/20 rounded-lg p-4">
+                              <h4 className="font-medium mb-3">Raw Results</h4>
+                              <pre className="text-xs bg-background rounded p-3 overflow-auto max-h-64">
+                                {JSON.stringify(selectedResult.results, null, 2)}
+                              </pre>
+                            </div>
+                          </TabsContent>
+                        </Tabs>
+                      </div>
+                    </div>
+                  )}
               </CardContent>
             </Card>
           </div>
