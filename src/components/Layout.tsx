@@ -26,7 +26,6 @@ const navigation = [
   { name: "ML Studio", href: "/mlstudio", icon: Brain },
   { name: "Forecast", href: "/forecast", icon: TrendingUp },
   { name: "Recommendation", href: "/recommendation", icon: Users },
-  { name: "Segmentation", href: "/segmentation", icon: PieChart },
 ];
 
 export function Layout({ children }: LayoutProps) {
