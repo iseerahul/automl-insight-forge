@@ -100,21 +100,19 @@ const Forecast = () => {
     const dataset = datasets.find(d => d.id === datasetId);
     if (!dataset?.data_profile?.columns) return [];
     
-    return Object.keys(dataset.data_profile.columns).filter(col => {
-      const colInfo = dataset.data_profile.columns[col];
-      return colInfo.type === 'numeric' || colInfo.type === 'date';
-    });
+    return Object.keys(dataset.data_profile.columns);
   };
 
   const getDateColumns = (datasetId: string) => {
     const dataset = datasets.find(d => d.id === datasetId);
     if (!dataset?.data_profile?.columns) return [];
     
-    return Object.keys(dataset.data_profile.columns).filter(col => {
-      const colInfo = dataset.data_profile.columns[col];
-      return colInfo.type === 'date' || colInfo.name.toLowerCase().includes('date') || 
-             colInfo.name.toLowerCase().includes('time');
-    });
+    return Object.keys(dataset.data_profile.columns).filter(col => 
+      col.toLowerCase().includes('date') || 
+      col.toLowerCase().includes('time') ||
+      col.toLowerCase().includes('created') ||
+      col.toLowerCase().includes('updated')
+    );
   };
 
   const createForecastModel = async () => {

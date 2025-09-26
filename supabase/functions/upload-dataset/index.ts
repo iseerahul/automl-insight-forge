@@ -68,11 +68,50 @@ serve(async (req) => {
         rowCount = Math.max(0, lines.length - 1); // Subtract header row
         
         if (lines.length > 0) {
-          const headers = lines[0].split(',');
+          const headers = lines[0].split(',').map(h => h.trim());
           columnCount = headers.length;
+          const rows = lines.slice(1, Math.min(100, lines.length)).map(line => line.split(',').map(cell => cell.trim()));
+          rowCount = lines.length - 1; // Exclude header
+          
+          // Generate proper data profile
+          const columnProfile: { [key: string]: any } = {};
+          headers.forEach((header, index) => {
+            const values = rows.map(row => row[index]).filter(val => val && val.trim() !== '');
+            const numericValues = values.map(val => parseFloat(val)).filter(val => !isNaN(val));
+            
+            // Check if column contains dates
+            const dateValues = values.filter(val => {
+              const date = new Date(val);
+              return !isNaN(date.getTime()) && val.length > 8;
+            });
+            
+            let columnType = 'text';
+            if (numericValues.length > values.length * 0.8) {
+              columnType = 'numeric';
+            } else if (dateValues.length > values.length * 0.5 || 
+                       header.toLowerCase().includes('date') || 
+                       header.toLowerCase().includes('time') ||
+                       header.toLowerCase().includes('created') ||
+                       header.toLowerCase().includes('updated')) {
+              columnType = 'date';
+            }
+            
+            columnProfile[header] = {
+              name: header,
+              type: columnType,
+              sample_values: values.slice(0, 5),
+              null_count: rows.length - values.length,
+              unique_count: new Set(values).size
+            };
+          });
+
           dataProfile = {
-            columns: headers.map(h => h.trim()),
-            sample_rows: lines.slice(1, 6).map(line => line.split(',').map(cell => cell.trim()))
+            columns: columnProfile,
+            summary: {
+              total_rows: rowCount,
+              total_columns: columnCount
+            },
+            sample_rows: rows.slice(0, 5)
           };
         }
       } else if (file.type === 'application/json' || file.name.endsWith('.json')) {
