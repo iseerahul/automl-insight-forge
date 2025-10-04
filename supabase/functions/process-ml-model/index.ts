@@ -324,7 +324,7 @@ Focus on business value and actionable insights rather than technical details.`;
       .eq('id', modelId);
 
     // Call Gemini AI
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
+    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -420,25 +420,7 @@ Focus on business value and actionable insights rather than technical details.`;
   } catch (error) {
     console.error('Process ML model error:', error);
     
-    // Update model status to error if we have the modelId
-    try {
-      const requestBody = await req.clone().json();
-      const { modelId } = requestBody;
-      if (modelId) {
-        const supabaseClient = createClient(
-          Deno.env.get('SUPABASE_URL') ?? '',
-          Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-          { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
-        );
-        
-        await supabaseClient
-          .from('ml_models')
-          .update({ status: 'error', training_progress: 0 })
-          .eq('id', modelId);
-      }
-    } catch (updateError) {
-      console.error('Error updating model status to error:', updateError);
-    }
+    // Note: Cannot update model status here as request body has already been read
 
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
