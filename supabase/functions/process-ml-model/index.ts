@@ -114,7 +114,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
+const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -323,34 +323,32 @@ Focus on business value and actionable insights rather than technical details.`;
       .update({ training_progress: 30 })
       .eq('id', modelId);
 
-    // Call Gemini AI
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    // Call Lovable AI (Gemini)
+    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.3,
-          topK: 32,
-          topP: 1,
-          maxOutputTokens: 2048,
-        }
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ]
       }),
     });
 
-    if (!geminiResponse.ok) {
-      console.error('Gemini API error:', await geminiResponse.text());
+    if (!aiResponse.ok) {
+      const errorText = await aiResponse.text();
+      console.error('Lovable AI error:', errorText);
       throw new Error('AI processing failed');
     }
 
-    const geminiData = await geminiResponse.json();
-    console.log('Received response from Gemini AI');
+    const aiData = await aiResponse.json();
+    console.log('Received response from Lovable AI');
 
     // Update progress
     await supabaseClient
@@ -361,7 +359,7 @@ Focus on business value and actionable insights rather than technical details.`;
     // Extract AI insights
     let aiInsights = {};
     try {
-      const aiText = geminiData.candidates[0].content.parts[0].text;
+      const aiText = aiData.choices?.[0]?.message?.content || '';
       console.log('AI Insights Response:', aiText);
       
       const jsonMatch = aiText.match(/\{[\s\S]*\}/);
