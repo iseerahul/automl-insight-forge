@@ -147,7 +147,7 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY')!;
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -344,17 +344,24 @@ serve(async (req) => {
       Provide specific business recommendations about user engagement, item popularity, and recommendation strategy optimization.
       `;
 
-      const geminiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + geminiApiKey, {
+      const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Authorization': `Bearer ${lovableApiKey}`,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: insightPrompt }] }]
+          model: 'google/gemini-2.5-flash',
+          messages: [{ role: 'user', content: insightPrompt }]
         })
       });
 
-      if (geminiResponse.ok) {
-        const geminiData = await geminiResponse.json();
-        insights = geminiData.candidates[0]?.content?.parts[0]?.text || 'No insights generated.';
+      if (aiResponse.ok) {
+        const aiData = await aiResponse.json();
+        insights = aiData.choices?.[0]?.message?.content || 'No insights generated.';
+      } else {
+        const errorText = await aiResponse.text();
+        console.error('AI API error:', errorText);
       }
     } catch (error) {
       console.error('Error generating insights:', error);
