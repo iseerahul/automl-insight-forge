@@ -112,31 +112,6 @@ const Index = () => {
             />
             
             <ServiceCard
-              title="Forecast Engine"
-              description="Advanced time series forecasting with seasonal pattern detection"
-              icon={TrendingUp}
-              href="/forecast"
-              status="beta"
-              features={[
-                "Multi-variate forecasting",
-                "Confidence intervals",
-                "Anomaly detection"
-              ]}
-            />
-            
-            <ServiceCard
-              title="Recommendation AI"
-              description="Intelligent recommendation systems powered by collaborative filtering"
-              icon={Users}
-              href="/recommendation"
-              features={[
-                "Real-time recommendations",
-                "A/B testing framework",
-                "Performance analytics"
-              ]}
-            />
-            
-            <ServiceCard
               title="Smart Segmentation"
               description="Customer segmentation and clustering with behavioral analysis"
               icon={PieChart}
