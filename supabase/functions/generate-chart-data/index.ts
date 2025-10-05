@@ -32,11 +32,11 @@ serve(async (req) => {
 
     const { datasetId, xColumn, yColumn, chartType } = await req.json();
 
-    if (!datasetId || !xColumn || !yColumn || !chartType) {
-      throw new Error('Missing required parameters');
-    }
+    console.log('Chart generation request:', { datasetId, xColumn, yColumn, chartType, userId: user.id });
 
-    console.log('Generating chart data for:', { datasetId, xColumn, yColumn, chartType });
+    if (!datasetId || !xColumn || !yColumn || !chartType) {
+      throw new Error('Missing required parameters: datasetId, xColumn, yColumn, or chartType');
+    }
 
     // Get dataset metadata
     const { data: dataset, error: datasetError } = await supabaseClient
@@ -48,8 +48,10 @@ serve(async (req) => {
 
     if (datasetError || !dataset) {
       console.error('Dataset fetch error:', datasetError);
-      throw new Error('Dataset not found');
+      throw new Error('Dataset not found or access denied');
     }
+
+    console.log('Dataset found:', { name: dataset.name, storagePath: dataset.storage_path });
 
     // Download the CSV file from storage
     const { data: fileData, error: downloadError } = await supabaseClient.storage
@@ -63,42 +65,65 @@ serve(async (req) => {
 
     // Parse CSV
     const csvText = await fileData.text();
-    const records = parse(csvText, { skipFirstRow: true, columns: undefined }) as any[];
+    const records = parse(csvText, { skipFirstRow: true }) as string[][];
 
     if (records.length === 0) {
       throw new Error('Upload a valid CSV to generate charts.');
     }
 
-    // Extract labels and values
+    console.log(`Parsed ${records.length} rows from CSV`);
+
+    // Get column headers from first row of CSV
+    const csvLines = csvText.split('\n');
+    const headers = csvLines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+    
+    console.log('CSV headers:', headers);
+
+    // Find column indices
+    const xColumnIndex = headers.findIndex(h => h === xColumn);
+    const yColumnIndex = headers.findIndex(h => h === yColumn);
+
+    if (xColumnIndex === -1) {
+      throw new Error(`X-axis column "${xColumn}" not found in dataset`);
+    }
+    if (yColumnIndex === -1) {
+      throw new Error(`Y-axis column "${yColumn}" not found in dataset`);
+    }
+
+    console.log(`Column indices - X: ${xColumnIndex}, Y: ${yColumnIndex}`);
+
+    // Extract labels and values, filtering out invalid data
     const labels: string[] = [];
     const values: number[] = [];
 
-    for (const record of records) {
-      const xValue = record[xColumn];
-      const yValue = record[yColumn];
+    for (let i = 0; i < records.length; i++) {
+      const record = records[i];
+      
+      if (!record || record.length === 0) continue;
 
-      if (xValue !== undefined && xValue !== null) {
-        labels.push(String(xValue));
-      }
+      const xValue = record[xColumnIndex];
+      const yValue = record[yColumnIndex];
 
-      // Parse numeric value
+      if (xValue === undefined || xValue === null || xValue === '') continue;
+
+      // Try to parse Y value as number
       const numericValue = parseFloat(yValue);
-      if (!isNaN(numericValue)) {
-        values.push(numericValue);
-      } else {
-        // For non-numeric values, use 0 or skip
-        if (chartType !== 'pie') {
-          throw new Error(`Y-axis column "${yColumn}" contains non-numeric values`);
-        }
-        values.push(0);
+      
+      if (isNaN(numericValue)) {
+        // For non-numeric values, skip this row
+        console.log(`Skipping row ${i + 1}: Y value "${yValue}" is not numeric`);
+        continue;
       }
+
+      labels.push(String(xValue).trim());
+      values.push(numericValue);
     }
 
     if (values.length === 0) {
       throw new Error('No numeric columns found for chart generation.');
     }
 
-    console.log(`Processed ${labels.length} data points`);
+    console.log(`Successfully processed ${labels.length} data points`);
 
     return new Response(
       JSON.stringify({
@@ -106,7 +131,8 @@ serve(async (req) => {
         values,
         chartType,
         xColumn,
-        yColumn
+        yColumn,
+        dataPoints: labels.length
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

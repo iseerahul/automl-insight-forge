@@ -126,9 +126,13 @@ const ChartBuilder = () => {
     }
 
     setProcessing(true);
+    setChartData([]); // Clear previous chart
+    
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("No active session");
+
+      console.log('Generating chart with:', { datasetId, xColumn, yColumn, chartType });
 
       const response = await supabase.functions.invoke('generate-chart-data', {
         body: {
@@ -139,29 +143,53 @@ const ChartBuilder = () => {
         },
       });
 
-      if (response.error) throw response.error;
+      console.log('Chart generation response:', response);
+
+      if (response.error) {
+        console.error('Chart generation error:', response.error);
+        throw new Error(response.error.message || 'Failed to generate chart');
+      }
+
+      if (!response.data) {
+        throw new Error('No data returned from chart generation');
+      }
 
       const { labels, values } = response.data;
 
+      if (!labels || !values || labels.length === 0 || values.length === 0) {
+        throw new Error('No data available to visualize');
+      }
+
       // Format data for Recharts
       const formattedData = labels.map((label: string, index: number) => ({
-        name: label,
-        value: values[index],
+        name: String(label),
+        value: Number(values[index]),
       }));
+
+      console.log('Formatted chart data:', formattedData);
 
       setChartData(formattedData);
 
       toast({
-        title: "Chart generated",
-        description: "Your chart has been created successfully",
+        title: "Chart generated successfully",
+        description: `Created ${chartType} chart with ${formattedData.length} data points`,
       });
     } catch (error: any) {
       console.error('Chart generation error:', error);
+      
+      let errorMessage = error.message || "Failed to generate chart";
+      
+      if (errorMessage.includes('non-numeric')) {
+        errorMessage = "No numeric values found for selected Y-axis column.";
+      }
+      
       toast({
         title: "Generation failed",
-        description: error.message || "Failed to generate chart",
+        description: errorMessage,
         variant: "destructive",
       });
+      
+      setChartData([]); // Clear chart on error
     } finally {
       setProcessing(false);
     }
@@ -361,7 +389,7 @@ const ChartBuilder = () => {
                     {processing ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Generating...
+                        Generating chart...
                       </>
                     ) : (
                       <>
@@ -370,6 +398,12 @@ const ChartBuilder = () => {
                       </>
                     )}
                   </Button>
+
+                  {columns.length > 0 && !xColumn && !yColumn && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Select columns above and click "Generate Chart" to visualize your data
+                    </p>
+                  )}
                 </>
               )}
             </CardContent>
@@ -381,7 +415,11 @@ const ChartBuilder = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle>Chart Visualization</CardTitle>
-                  <CardDescription>Your generated chart will appear here</CardDescription>
+                  <CardDescription>
+                    {chartData.length > 0 
+                      ? `Showing ${chartData.length} data points`
+                      : "Your generated chart will appear here"}
+                  </CardDescription>
                 </div>
                 {chartData.length > 0 && (
                   <Button onClick={downloadChart} variant="outline" size="sm">
@@ -392,7 +430,14 @@ const ChartBuilder = () => {
               </div>
             </CardHeader>
             <CardContent>
-              {chartData.length > 0 ? (
+              {processing ? (
+                <div className="w-full h-[400px] flex items-center justify-center">
+                  <div className="text-center">
+                    <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin text-primary" />
+                    <p className="text-muted-foreground">Generating your chart...</p>
+                  </div>
+                </div>
+              ) : chartData.length > 0 ? (
                 <div className="w-full h-[400px]">
                   {renderChart()}
                 </div>
@@ -400,7 +445,12 @@ const ChartBuilder = () => {
                 <div className="w-full h-[400px] flex items-center justify-center border-2 border-dashed border-border rounded-lg">
                   <div className="text-center text-muted-foreground">
                     <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                    <p>Upload a CSV to generate charts</p>
+                    <p className="font-medium mb-2">No chart to display</p>
+                    <p className="text-sm">
+                      {columns.length > 0 
+                        ? "Select columns and click 'Generate Chart' to create a visualization"
+                        : "Upload a CSV file to get started"}
+                    </p>
                   </div>
                 </div>
               )}
