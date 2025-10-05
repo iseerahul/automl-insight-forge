@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,12 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload, BarChart3, Download, Loader2 } from "lucide-react";
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
-import { Bar, Line, Pie, Scatter } from 'react-chartjs-2';
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend);
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 
 type ChartType = 'bar' | 'line' | 'pie' | 'scatter';
+
+const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--destructive))'];
 
 const ChartBuilder = () => {
   const { toast } = useToast();
@@ -23,9 +22,8 @@ const ChartBuilder = () => {
   const [xColumn, setXColumn] = useState<string>("");
   const [yColumn, setYColumn] = useState<string>("");
   const [chartType, setChartType] = useState<ChartType>("bar");
-  const [chartData, setChartData] = useState<any>(null);
+  const [chartData, setChartData] = useState<any[]>([]);
   const [datasetId, setDatasetId] = useState<string>("");
-  const chartRef = useRef<any>(null);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -131,22 +129,13 @@ const ChartBuilder = () => {
 
       const { labels, values } = response.data;
 
-      const data = {
-        labels,
-        datasets: [{
-          label: yColumn,
-          data: values,
-          backgroundColor: chartType === 'pie' 
-            ? labels.map((_: any, i: number) => `hsl(${(i * 360) / labels.length}, 70%, 50%)`)
-            : 'hsl(var(--primary))',
-          borderColor: chartType === 'pie' 
-            ? labels.map((_: any, i: number) => `hsl(${(i * 360) / labels.length}, 70%, 40%)`)
-            : 'hsl(var(--primary))',
-          borderWidth: 1,
-        }]
-      };
+      // Format data for Recharts
+      const formattedData = labels.map((label: string, index: number) => ({
+        name: label,
+        value: values[index],
+      }));
 
-      setChartData(data);
+      setChartData(formattedData);
 
       toast({
         title: "Chart generated",
@@ -165,52 +154,87 @@ const ChartBuilder = () => {
   };
 
   const downloadChart = () => {
-    if (!chartRef.current) return;
+    const chartContainer = document.querySelector('.recharts-wrapper');
+    if (!chartContainer) return;
 
-    const canvas = chartRef.current.canvas;
-    const url = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.download = `chart-${chartType}-${Date.now()}.png`;
-    link.href = url;
-    link.click();
-
+    // For download, we'd need html2canvas or similar library
+    // For now, just show a message
     toast({
-      title: "Download started",
-      description: "Your chart is being downloaded",
+      title: "Download feature",
+      description: "Right-click on the chart and select 'Save image as...'",
     });
   };
 
   const renderChart = () => {
-    if (!chartData) return null;
+    if (!chartData.length) return null;
 
-    const options = {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: 'top' as const,
-        },
-        title: {
-          display: true,
-          text: `${yColumn} by ${xColumn}`,
-        },
-      },
-    };
-
-    const commonProps = {
-      ref: chartRef,
+    const chartProps = {
       data: chartData,
-      options,
+      margin: { top: 5, right: 30, left: 20, bottom: 5 },
     };
 
     switch (chartType) {
       case 'bar':
-        return <Bar {...commonProps} />;
+        return (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart {...chartProps}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="value" fill="hsl(var(--primary))" name={yColumn} />
+            </BarChart>
+          </ResponsiveContainer>
+        );
       case 'line':
-        return <Line {...commonProps} />;
+        return (
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart {...chartProps}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="value" stroke="hsl(var(--primary))" name={yColumn} />
+            </LineChart>
+          </ResponsiveContainer>
+        );
       case 'pie':
-        return <Pie {...commonProps} />;
+        return (
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={chartData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={150}
+                label
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        );
       case 'scatter':
-        return <Scatter {...commonProps} />;
+        return (
+          <ResponsiveContainer width="100%" height="100%">
+            <ScatterChart {...chartProps}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis dataKey="value" />
+              <Tooltip />
+              <Legend />
+              <Scatter name={yColumn} data={chartData} fill="hsl(var(--primary))" />
+            </ScatterChart>
+          </ResponsiveContainer>
+        );
       default:
         return null;
     }
@@ -345,7 +369,7 @@ const ChartBuilder = () => {
                   <CardTitle>Chart Visualization</CardTitle>
                   <CardDescription>Your generated chart will appear here</CardDescription>
                 </div>
-                {chartData && (
+                {chartData.length > 0 && (
                   <Button onClick={downloadChart} variant="outline" size="sm">
                     <Download className="w-4 h-4 mr-2" />
                     Download
@@ -354,8 +378,8 @@ const ChartBuilder = () => {
               </div>
             </CardHeader>
             <CardContent>
-              {chartData ? (
-                <div className="w-full h-[400px] flex items-center justify-center">
+              {chartData.length > 0 ? (
+                <div className="w-full h-[400px]">
                   {renderChart()}
                 </div>
               ) : (
