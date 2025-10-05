@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import DataConnect from "./pages/DataConnect";
 import MLStudio from "./pages/MLStudio";
+import ChartBuilder from "./pages/ChartBuilder";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/dataconnect" element={<ProtectedRoute><DataConnect /></ProtectedRoute>} />
             <Route path="/mlstudio" element={<ProtectedRoute><MLStudio /></ProtectedRoute>} />
+            <Route path="/chartbuilder" element={<ProtectedRoute><ChartBuilder /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

@@ -112,28 +112,28 @@ const Index = () => {
             />
             
             <ServiceCard
-              title="Smart Segmentation"
-              description="Customer segmentation and clustering with behavioral analysis"
+              title="Chart Builder"
+              description="Build interactive visualizations from your CSV data instantly"
               icon={PieChart}
-              href="/segmentation"
-              status="beta"
+              href="/chartbuilder"
+              gradient={true}
               features={[
-                "Dynamic clustering",
-                "Segment profiling",
-                "Export capabilities"
+                "Multiple chart types",
+                "Interactive controls",
+                "Export as image"
               ]}
             />
             
             <ServiceCard
-              title="Analytics Dashboard"
-              description="Comprehensive business intelligence with interactive visualizations"
+              title="Smart Segmentation"
+              description="Customer segmentation and clustering with behavioral analysis"
               icon={BarChart3}
-              href="/dashboard"
+              href="/segmentation"
               status="coming-soon"
               features={[
-                "Real-time metrics",
-                "Custom dashboards",
-                "Automated reports"
+                "Dynamic clustering",
+                "Segment profiling",
+                "Export capabilities"
               ]}
             />
           </div>

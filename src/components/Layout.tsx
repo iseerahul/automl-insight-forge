@@ -7,8 +7,6 @@ import {
   BarChart3, 
   Database, 
   Brain, 
-  TrendingUp, 
-  Users, 
   PieChart,
   Settings,
   ChevronRight,
@@ -24,8 +22,7 @@ const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
   { name: "DataConnect Pro", href: "/dataconnect", icon: Database },
   { name: "ML Studio", href: "/mlstudio", icon: Brain },
-  { name: "Forecast", href: "/forecast", icon: TrendingUp },
-  { name: "Recommendation", href: "/recommendation", icon: Users },
+  { name: "Chart Builder", href: "/chartbuilder", icon: PieChart },
 ];
 
 export function Layout({ children }: LayoutProps) {
