@@ -59,15 +59,29 @@ const ChartBuilder = () => {
       setDatasetId(dataset.id);
       
       if (dataset.data_profile?.columns) {
-        const cols = dataset.data_profile.columns.map((c: any) => c.name);
-        const numCols = dataset.data_profile.columns
-          .filter((c: any) => c.type === 'number')
-          .map((c: any) => c.name);
-        
-        setColumns(cols);
-        setNumericColumns(numCols);
+        // Handle both old array format and new object format
+        let columnsList: string[] = [];
+        let numericColumnsList: string[] = [];
 
-        if (numCols.length === 0) {
+        if (Array.isArray(dataset.data_profile.columns)) {
+          // Old format: columns is an array
+          columnsList = dataset.data_profile.columns.map((c: any) => c.name);
+          numericColumnsList = dataset.data_profile.columns
+            .filter((c: any) => c.type === 'number')
+            .map((c: any) => c.name);
+        } else {
+          // New format: columns is an object
+          const columnsObj = dataset.data_profile.columns;
+          columnsList = Object.keys(columnsObj);
+          numericColumnsList = Object.keys(columnsObj).filter(
+            (key) => columnsObj[key].type === 'numeric' || columnsObj[key].type === 'number'
+          );
+        }
+        
+        setColumns(columnsList);
+        setNumericColumns(numericColumnsList);
+
+        if (numericColumnsList.length === 0) {
           toast({
             title: "No numeric columns found",
             description: "No numeric columns found for chart generation.",
