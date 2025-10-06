@@ -132,7 +132,8 @@ const ChartBuilder = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("No active session");
 
-      console.log('Generating chart with:', { datasetId, xColumn, yColumn, chartType });
+      console.log('=== CHART GENERATION START ===');
+      console.log('Request params:', { datasetId, xColumn, yColumn, chartType });
 
       const response = await supabase.functions.invoke('generate-chart-data', {
         body: {
@@ -143,20 +144,32 @@ const ChartBuilder = () => {
         },
       });
 
-      console.log('Chart generation response:', response);
+      console.log('Raw response:', JSON.stringify(response, null, 2));
 
       if (response.error) {
-        console.error('Chart generation error:', response.error);
+        console.error('Response contains error:', response.error);
         throw new Error(response.error.message || 'Failed to generate chart');
       }
 
       if (!response.data) {
+        console.error('No data in response');
         throw new Error('No data returned from chart generation');
       }
 
+      console.log('Response data:', response.data);
+
       const { labels, values } = response.data;
 
-      if (!labels || !values || labels.length === 0 || values.length === 0) {
+      console.log('Extracted labels:', labels);
+      console.log('Extracted values:', values);
+
+      if (!labels || !values) {
+        console.error('Labels or values missing in response');
+        throw new Error('Invalid response format: missing labels or values');
+      }
+
+      if (labels.length === 0 || values.length === 0) {
+        console.error('Empty labels or values array');
         throw new Error('No data available to visualize');
       }
 
@@ -166,20 +179,24 @@ const ChartBuilder = () => {
         value: Number(values[index]),
       }));
 
-      console.log('Formatted chart data:', formattedData);
+      console.log('Formatted data for Recharts:', formattedData);
+      console.log('Setting chartData state with', formattedData.length, 'items');
 
       setChartData(formattedData);
+
+      console.log('=== CHART GENERATION SUCCESS ===');
 
       toast({
         title: "Chart generated successfully",
         description: `Created ${chartType} chart with ${formattedData.length} data points`,
       });
     } catch (error: any) {
-      console.error('Chart generation error:', error);
+      console.error('=== CHART GENERATION ERROR ===');
+      console.error('Error details:', error);
       
       let errorMessage = error.message || "Failed to generate chart";
       
-      if (errorMessage.includes('non-numeric')) {
+      if (errorMessage.includes('non-numeric') || errorMessage.includes('No numeric')) {
         errorMessage = "No numeric values found for selected Y-axis column.";
       }
       
@@ -208,7 +225,15 @@ const ChartBuilder = () => {
   };
 
   const renderChart = () => {
-    if (!chartData.length) return null;
+    console.log('renderChart called, chartData length:', chartData.length);
+    console.log('chartData:', chartData);
+    
+    if (!chartData.length) {
+      console.log('No chart data, returning null');
+      return null;
+    }
+    
+    console.log('Rendering', chartType, 'chart');
 
     const chartProps = {
       data: chartData,
