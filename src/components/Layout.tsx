@@ -7,7 +7,7 @@ import {
   BarChart3, 
   Database, 
   Brain, 
-  PieChart,
+  MessageSquare,
   Settings,
   ChevronRight,
   LogOut,
@@ -22,7 +22,7 @@ const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
   { name: "DataConnect Pro", href: "/dataconnect", icon: Database },
   { name: "ML Studio", href: "/mlstudio", icon: Brain },
-  { name: "Chart Builder", href: "/chartbuilder", icon: PieChart },
+  { name: "AI Chatbot", href: "/chatbot", icon: MessageSquare },
 ];
 
 export function Layout({ children }: LayoutProps) {
