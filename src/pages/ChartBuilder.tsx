@@ -158,37 +158,28 @@ const ChartBuilder = () => {
 
       console.log('Response data:', response.data);
 
-      const { labels, values } = response.data;
+      const { data } = response.data;
 
-      console.log('Extracted labels:', labels);
-      console.log('Extracted values:', values);
+      console.log('Extracted chart data:', data);
 
-      if (!labels || !values) {
-        console.error('Labels or values missing in response');
-        throw new Error('Invalid response format: missing labels or values');
+      if (!data) {
+        console.error('Data missing in response');
+        throw new Error('Invalid response format: missing data');
       }
 
-      if (labels.length === 0 || values.length === 0) {
-        console.error('Empty labels or values array');
+      if (!Array.isArray(data) || data.length === 0) {
+        console.error('Empty or invalid data array');
         throw new Error('No data available to visualize');
       }
 
-      // Format data for Recharts
-      const formattedData = labels.map((label: string, index: number) => ({
-        name: String(label),
-        value: Number(values[index]),
-      }));
-
-      console.log('Formatted data for Recharts:', formattedData);
-      console.log('Setting chartData state with', formattedData.length, 'items');
-
-      setChartData(formattedData);
+      console.log('Setting chartData state with', data.length, 'items');
+      setChartData(data);
 
       console.log('=== CHART GENERATION SUCCESS ===');
 
       toast({
         title: "Chart generated successfully",
-        description: `Created ${chartType} chart with ${formattedData.length} data points`,
+        description: `Created ${chartType} chart with ${data.length} data points`,
       });
     } catch (error: any) {
       console.error('=== CHART GENERATION ERROR ===');

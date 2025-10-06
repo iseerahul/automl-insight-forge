@@ -92,9 +92,8 @@ serve(async (req) => {
 
     console.log(`Column indices - X: ${xColumnIndex}, Y: ${yColumnIndex}`);
 
-    // Extract labels and values, filtering out invalid data
-    const labels: string[] = [];
-    const values: number[] = [];
+    // Format data for Recharts
+    const chartData: Array<{ name: string; value: number }> = [];
 
     for (let i = 0; i < records.length; i++) {
       const record = records[i];
@@ -110,29 +109,29 @@ serve(async (req) => {
       const numericValue = parseFloat(yValue);
       
       if (isNaN(numericValue)) {
-        // For non-numeric values, skip this row
         console.log(`Skipping row ${i + 1}: Y value "${yValue}" is not numeric`);
         continue;
       }
 
-      labels.push(String(xValue).trim());
-      values.push(numericValue);
+      chartData.push({
+        name: String(xValue).trim(),
+        value: numericValue
+      });
     }
 
-    if (values.length === 0) {
+    if (chartData.length === 0) {
       throw new Error('No numeric columns found for chart generation.');
     }
 
-    console.log(`Successfully processed ${labels.length} data points`);
+    console.log(`Successfully processed ${chartData.length} data points`);
 
     return new Response(
       JSON.stringify({
-        labels,
-        values,
+        data: chartData,
         chartType,
         xColumn,
         yColumn,
-        dataPoints: labels.length
+        dataPoints: chartData.length
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

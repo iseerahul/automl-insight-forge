@@ -1,1 +1,10 @@
 project_id = "implgfeegibmaxerblkc"
+
+[functions.upload-dataset]
+verify_jwt = true
+
+[functions.process-ml-model]
+verify_jwt = true
+
+[functions.generate-chart-data]
+verify_jwt = true
