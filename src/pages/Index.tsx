@@ -4,15 +4,11 @@ import { Button } from "@/components/ui/button";
 import { 
   Database, 
   Brain, 
-  TrendingUp, 
-  Users, 
-  PieChart,
-  BarChart3,
-  Sparkles,
   Zap,
   Shield,
   MessageSquare,
-  FileText
+  FileText,
+  BarChart3
 } from "lucide-react";
 
 const Index = () => {
@@ -26,19 +22,10 @@ const Index = () => {
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
                 AutoML Analytics Hub
               </h1>
-              <p className="text-xl opacity-90 mb-8">
+              <p className="text-xl opacity-90">
                 Transform your data into intelligent insights with our enterprise-grade AutoML platform. 
                 No coding required - just upload, configure, and deploy.
               </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <Button size="lg" variant="secondary" className="font-semibold">
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  Start Your First Model
-                </Button>
-                <Button size="lg" variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
-                  View Documentation
-                </Button>
-              </div>
             </div>
           </div>
         </div>
@@ -135,19 +122,6 @@ const Index = () => {
                 "Text summarization",
                 "Deep content analysis",
                 "Simple explanations"
-              ]}
-            />
-            
-            <ServiceCard
-              title="Smart Segmentation"
-              description="Customer segmentation and clustering with behavioral analysis"
-              icon={BarChart3}
-              href="/segmentation"
-              status="coming-soon"
-              features={[
-                "Dynamic clustering",
-                "Segment profiling",
-                "Export capabilities"
               ]}
             />
           </div>

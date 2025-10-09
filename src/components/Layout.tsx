@@ -9,7 +9,6 @@ import {
   Brain, 
   MessageSquare,
   FileText,
-  Settings,
   ChevronRight,
   LogOut,
   User
@@ -90,24 +89,15 @@ export function Layout({ children }: LayoutProps) {
             </div>
           </div>
           
-          {/* Settings & Logout */}
-          <div className="space-y-1">
-            <Link
-              to="/settings"
-              className="flex items-center px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-smooth"
-            >
-              <Settings className="w-4 h-4 mr-3" />
-              Settings
-            </Link>
-            <Button
-              onClick={signOut}
-              variant="ghost"
-              className="w-full justify-start text-muted-foreground hover:text-foreground px-4 py-2 h-auto"
-            >
-              <LogOut className="w-4 h-4 mr-3" />
-              Sign Out
-            </Button>
-          </div>
+          {/* Logout */}
+          <Button
+            onClick={signOut}
+            variant="ghost"
+            className="w-full justify-start text-muted-foreground hover:text-foreground px-4 py-2 h-auto"
+          >
+            <LogOut className="w-4 h-4 mr-3" />
+            Sign Out
+          </Button>
         </div>
       </div>
 
