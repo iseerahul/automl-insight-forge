@@ -8,6 +8,7 @@ import {
   Database, 
   Brain, 
   MessageSquare,
+  FileText,
   Settings,
   ChevronRight,
   LogOut,
@@ -23,6 +24,7 @@ const navigation = [
   { name: "DataConnect Pro", href: "/dataconnect", icon: Database },
   { name: "ML Studio", href: "/mlstudio", icon: Brain },
   { name: "AI Chatbot", href: "/chatbot", icon: MessageSquare },
+  { name: "Content Analyzer", href: "/content-analyzer", icon: FileText },
 ];
 
 export function Layout({ children }: LayoutProps) {

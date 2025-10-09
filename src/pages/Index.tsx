@@ -10,7 +10,9 @@ import {
   BarChart3,
   Sparkles,
   Zap,
-  Shield
+  Shield,
+  MessageSquare,
+  FileText
 } from "lucide-react";
 
 const Index = () => {
@@ -112,15 +114,27 @@ const Index = () => {
             />
             
             <ServiceCard
-              title="Chart Builder"
-              description="Build interactive visualizations from your CSV data instantly"
-              icon={PieChart}
-              href="/chartbuilder"
+              title="AI Chatbot"
+              description="Have conversations with our AI assistant powered by advanced language models"
+              icon={MessageSquare}
+              href="/chatbot"
               gradient={true}
               features={[
-                "Multiple chart types",
-                "Interactive controls",
-                "Export as image"
+                "Natural conversations",
+                "Context-aware responses",
+                "Real-time processing"
+              ]}
+            />
+            
+            <ServiceCard
+              title="Content Analyzer"
+              description="Summarize, analyze, or simplify any text content using AI"
+              icon={FileText}
+              href="/content-analyzer"
+              features={[
+                "Text summarization",
+                "Deep content analysis",
+                "Simple explanations"
               ]}
             />
             

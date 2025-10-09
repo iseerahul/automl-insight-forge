@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import DataConnect from "./pages/DataConnect";
 import MLStudio from "./pages/MLStudio";
 import Chatbot from "./pages/Chatbot";
+import ContentAnalyzer from "./pages/ContentAnalyzer";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/dataconnect" element={<ProtectedRoute><DataConnect /></ProtectedRoute>} />
             <Route path="/mlstudio" element={<ProtectedRoute><MLStudio /></ProtectedRoute>} />
             <Route path="/chatbot" element={<ProtectedRoute><Chatbot /></ProtectedRoute>} />
+            <Route path="/content-analyzer" element={<ProtectedRoute><ContentAnalyzer /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
