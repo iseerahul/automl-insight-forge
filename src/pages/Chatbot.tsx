@@ -142,11 +142,11 @@ const Chatbot = () => {
                       <div
                         className={`max-w-[70%] rounded-lg px-4 py-2 ${
                           message.role === "assistant"
-                            ? "bg-muted text-foreground"
+                            ? "bg-muted text-black dark:text-white"
                             : "bg-primary text-primary-foreground"
                         }`}
                       >
-                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                        <p className="text-sm whitespace-pre-wrap text-inherit">{message.content}</p>
                         <p className="text-xs opacity-70 mt-1">
                           {message.timestamp.toLocaleTimeString()}
                         </p>
