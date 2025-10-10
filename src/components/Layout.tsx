@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { 
   BarChart3, 
   Database, 
@@ -87,6 +88,7 @@ export function Layout({ children }: LayoutProps) {
                 {user?.email}
               </p>
             </div>
+            <ThemeToggle />
           </div>
           
           {/* Logout */}

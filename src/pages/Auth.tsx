@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Brain, Eye, EyeOff, AlertCircle, Database, MessageSquare, FileText, Zap, Shield, BarChart3, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
@@ -146,6 +147,11 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
+      {/* Theme Toggle Header */}
+      <div className="fixed top-6 right-6 z-50 animate-fade-in">
+        <ThemeToggle />
+      </div>
+
       {/* Animated Background Elements */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-float" />
